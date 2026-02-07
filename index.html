@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Red Chapter | 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="heart-cursor"></div>
+
+    <nav style="position:fixed; top:0; width:100%; padding:20px 60px; display:flex; justify-content:space-between; align-items:center; background:rgba(250,249,246,0.95); backdrop-filter:blur(15px); z-index:1000; border-bottom:1px solid rgba(0,0,0,0.1);">
+        <div style="font-family:'Playfair Display'; font-style:italic; font-size:1.3rem;">Our Story in Red</div>
+        <a href="calendar.html" style="background:var(--burgundy); color:white; padding:10px 25px; text-decoration:none; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:600;">Daily Rewards</a>
+    </nav>
+
+    <header style="margin-top: 160px; text-align: center; padding-bottom: 80px; position: relative; overflow: hidden;" id="hero">
+        <h1 style="font-family: 'Playfair Display'; font-size: 3.5rem; font-style: italic; color: var(--burgundy);">Love Across the Miles</h1>
+        <p style="max-width: 500px; margin: 20px auto; opacity: 0.7;">This little space is more than just a website — it is a quiet archive of us. A place where memories live, where feelings are saved, and where every small moment we’ve shared is carefully kept like pressed flowers between the pages of a book. Each day reveals something new, a surprise waiting to be unlocked, just like our story unfolding one chapter at a time. From laughter to late-night talks, from simple messages to the way you make ordinary days special — everything here is a reminder that what we have is rare, gentle, and beautifully ours. Step in slowly, explore each day, and let this week feel like a celebration of us.</p>
+    </header>
+
+    <section class="zigzag-section">
+        <div class="horizontal-flow">
+            <div class="flip-card up">
+                <div class="flip-inner">
+                    <div class="flip-front"><img src="assets/us1.jpeg" alt="Us"></div>
+                    <div class="flip-back"><p>"Where it all began."</p></div>
+                </div>
+            </div>
+            <div class="flip-card mid">
+                <div class="flip-inner">
+                    <div class="flip-front"><img src="assets/pic1.jpeg" alt="Memory"></div>
+                    <div class="flip-back"><p>"My favorite chapter."</p></div>
+                </div>
+            </div>
+            <div class="flip-card down">
+                <div class="flip-inner">
+                    <div class="flip-front"><img src="assets/pic2.jpeg" alt="Detail"></div>
+                    <div class="flip-back"><p>"Home is where you are."</p></div>
+                </div>
+            </div>
+            <div class="flip-card mid">
+                <div class="flip-inner">
+                    <div class="flip-front"><img src="assets/pic3.jpeg" alt="Love"></div>
+                    <div class="flip-back"><p>"Forever in my heart."</p></div>
+                </div>
+            </div>
+            <div class="flip-card up">
+                <div class="flip-inner">
+                    <div class="flip-front"><img src="assets/us2.jpeg" alt="Together"></div>
+                    <div class="flip-back"><p>"Distance means so little."</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="black-section">
+        <h2 style="font-family: 'Playfair Display'; font-size: 2.8rem; font-style: italic; margin-bottom: 25px;">Miles of Connection</h2>
+        <p style="max-width: 750px; margin: 0 auto; opacity: 0.8; line-height: 1.8;">Loving you from a distance has taught me something beautiful — that love isn’t measured in miles, touches, or how often we meet, but in how deeply we stay connected even when the world keeps us apart. Every sunrise without you makes me miss you a little more, but it also makes me appreciate us a little deeper. So until the day I can place a rose in your hands and see your smile right in front of me, I send you these small pieces of my heart instead — through words, through memories, through this little world I created just for you. No matter how far the distance stretches, my love will always find its way back to you.</p>
+    </section>
+
+    <footer class="premium-footer">
+        <div style="font-family: 'Playfair Display'; font-style: italic; font-size: 1.5rem; margin-bottom: 10px;">Our Story in Red</div>
+        <p style="font-size: 0.65rem; letter-spacing: 4px; opacity: 0.5;">Crafted with Love &bull; February 2026</p>
+    </footer>
+
+    <script>
+        const cursor = document.getElementById('heart-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        function createFallingHeart() {
+            const hero = document.getElementById('hero');
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = '❤';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = '-20px';
+            heart.style.fontSize = Math.random() * 15 + 10 + 'px';
+            heart.style.animationDuration = Math.random() * 3 + 5 + 's';
+            hero.appendChild(heart);
+            setTimeout(() => heart.remove(), 7000);
+        }
+        setInterval(createFallingHeart, 800);
+    </script>
+</body>
+</html>

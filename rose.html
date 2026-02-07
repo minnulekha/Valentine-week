@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rose Day Challenge | The Red Chapter</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Base Styling */
+        body { 
+            overflow: hidden; 
+            touch-action: none; 
+            background: #FAF9F6; 
+            cursor: none; 
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #game-wrapper { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            background: linear-gradient(135deg, #630D16 0%, #8B0000 100%); 
+        }
+
+        /* Floating HUD */
+        .hud { 
+            position: absolute; 
+            top: 25px; 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-around; 
+            z-index: 100; 
+            pointer-events: none;
+        }
+
+        .stat { 
+            background: rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(15px); 
+            padding: 10px 25px; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            color: #FAF9F6; 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 1.1rem;
+        }
+
+        /* Modal Styling - Red Block Aesthetic */
+        #result-modal, #start-modal { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 85%; 
+            max-width: 420px; 
+            background: #FAF9F6; 
+            padding: 40px; 
+            border-radius: 4px; 
+            text-align: center; 
+            z-index: 1000; 
+            box-shadow: 20px 20px 0px #630D16;
+            border: 1px solid #630D16;
+        }
+
+        .bouquet-display { font-size: 70px; margin-bottom: 20px; display: block; }
+        
+        .overlay { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(26, 26, 26, 0.85); 
+            backdrop-filter: blur(5px); 
+            z-index: 900; 
+        }
+
+        .btn-game {
+            background: #630D16;
+            color: #D4AF37;
+            border: 1px solid #D4AF37;
+            padding: 12px 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 15px;
+        }
+
+        .btn-game:hover {
+            background: #D4AF37;
+            color: #630D16;
+        }
+
+        /* Gold Glowing Cursor */
+        #heart-cursor {
+            position: fixed;
+            width: 20px; height: 20px;
+            background: #D4AF37;
+            clip-path: path('M12 4.419c-2.826-5.695-11.999-4.064-11.999 3.27 0 7.27 9.903 10.938 11.999 15.311 2.096-4.373 12-8.041 12-15.311 0-7.327-9.17-8.972-12-3.27z');
+            pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 8px #D4AF37);
+        }
+    </style>
+</head>
+<body>
+    <div id="heart-cursor"></div>
+
+    <div id="game-wrapper">
+        <div class="hud">
+            <div class="stat">🌹 <span id="score">0</span> / 15</div>
+            <div class="stat" id="hearts">❤️❤️❤️</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="overlay" id="start-overlay"></div>
+    <div id="start-modal">
+        <span class="bouquet-display">🧺</span>
+        <h2 style="color: #630D16; font-family: 'Playfair Display'; font-style: italic; font-size: 2rem;">Rose Day Challenge</h2>
+        <p style="margin: 15px 0; color: #1a1a1a; font-size: 0.9rem;">Catch 15 of my roses to build a bouquet of our love. Every rose you collect is a piece of my heart! ❤️</p>
+        <button onclick="startGame()" class="btn-game">Collect My Roses</button>
+    </div>
+
+    <div class="overlay" id="overlay" style="display:none"></div>
+    <div id="result-modal" style="display:none">
+        <span class="bouquet-display" id="icon">💐</span>
+        <h2 id="title" style="color: #630D16; font-family: 'Playfair Display'; font-style: italic; font-size: 2.2rem;"></h2>
+        <p id="message" style="margin: 20px 0; color: #555; font-style: italic; font-size: 0.95rem; line-height: 1.6;"></p>
+        <button onclick="location.reload()" id="retry-btn" class="btn-game" style="display:none; margin-bottom: 10px;">Try Again</button>
+        <a href="calendar.html" class="btn-game">Back to Rewards</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('heart-cursor');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let score = 0, lives = 3, isGameOver = true, roses = [], particles = [], mouseX = canvas.width/2, smoothX = canvas.width/2, frameCount = 0;
+
+        // Custom Cursor & Touch
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        window.addEventListener('touchmove', e => {
+            mouseX = e.touches[0].clientX;
+            cursor.style.left = e.touches[0].clientX + 'px';
+            cursor.style.top = e.touches[0].clientY + 'px';
+        });
+
+        function startGame() {
+            isGameOver = false;
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('start-modal').style.display = 'none';
+            gameLoop();
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.vX = (Math.random()-0.5)*10;
+                this.vY = (Math.random()-0.5)*10;
+                this.alpha = 1;
+            }
+            update() { this.x += this.vX; this.y += this.vY; this.alpha -= 0.03; }
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = "#D4AF37";
+                ctx.beginPath(); ctx.arc(this.x, this.y, 3, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        class Rose {
+            constructor() {
+                this.x = Math.random()*(canvas.width-60)+30;
+                this.y = -60;
+                this.speed = 4 + (score * 0.25);
+                this.rotation = Math.random()*Math.PI*2;
+            }
+            update() { this.y += this.speed; this.rotation += 0.05; }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.font = "45px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("🌹", 0, 15);
+                ctx.restore();
+            }
+        }
+
+        function drawBasket(x, y) {
+            const bW = 120, bH = 80;
+            
+            // Basket Shadow
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.beginPath(); ctx.roundRect(x-bW/2 + 8, y + 8, bW, bH, 15); ctx.fill();
+
+            // Basket Body (Woven Look)
+            let grad = ctx.createLinearGradient(x, y, x, y+bH);
+            grad.addColorStop(0, "#D4AF37"); grad.addColorStop(1, "#8B6508");
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.roundRect(x-bW/2, y, bW, bH, 15); ctx.fill();
+
+            // Weave Detail Lines
+            ctx.strokeStyle = "rgba(0,0,0,0.2)";
+            ctx.lineWidth = 2;
+            for(let i = -bW/2 + 10; i < bW/2; i += 20) {
+                ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i, y + bH); ctx.stroke();
+            }
+            for(let j = 10; j < bH; j += 20) {
+                ctx.beginPath(); ctx.moveTo(x - bW/2, y + j); ctx.lineTo(x + bW/2, y + j); ctx.stroke();
+            }
+
+            // Top Rim
+            ctx.fillStyle = "#D4AF37";
+            ctx.beginPath(); ctx.roundRect(x-bW/2 - 5, y - 5, bW + 10, 15, 10); ctx.fill();
+            
+            // Icon
+            ctx.font = "30px Arial";
+            ctx.fillText("🌹", x, y + 45);
+        }
+
+        function gameLoop() {
+            if (isGameOver) return;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            
+            smoothX += (mouseX - smoothX) * 0.15; 
+            drawBasket(smoothX, canvas.height-130);
+
+            if (frameCount % Math.max(25, (50 - score*2)) === 0) roses.push(new Rose());
+
+            roses.forEach((r, i) => {
+                r.update(); r.draw();
+                if (r.y > canvas.height-140 && r.y < canvas.height-80 && Math.abs(r.x-smoothX) < 70) {
+                    for(let j=0; j<12; j++) particles.push(new Particle(r.x, r.y));
+                    roses.splice(i, 1);
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    if (score >= 15) endGame(true);
+                } else if (r.y > canvas.height) {
+                    roses.splice(i, 1);
+                    lives--;
+                    document.getElementById('hearts').innerText = "❤️".repeat(Math.max(0, lives));
+                    if (lives <= 0) endGame(false);
+                }
+            });
+
+            particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if(p.alpha <= 0) particles.splice(i, 1);
+            });
+
+            frameCount++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(won) {
+            isGameOver = true;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('result-modal').style.display = 'block';
+            document.getElementById('icon').innerText = won ? "💐" : "🥀";
+            document.getElementById('title').innerText = won ? "You Collected My Roses!" : "They Faded Away...";
+            document.getElementById('message').innerText = won ? 
+                "You successfully collected every rose I sent your way! Each rose represents a piece of my heart reaching out to yours. You are my forever bouquet. ❤️" : 
+                "The distance made it hard to collect all my roses this time, but my love is still rooted deeply for you. Want to try again, my love?";
+            if(!won) document.getElementById('retry-btn').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>

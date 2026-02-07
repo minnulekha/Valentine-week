@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Daily Surprises | The Red Chapter</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- Premium Layout & Nav Fixes --- */
+        body { 
+            background-color: #FAF9F6; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            color: #630D16;
+        }
+
+        /* Fixed Navigation Bar Styling */
+        .nav-premium {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px; /* Explicit height to prevent collapse */
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(250, 249, 246, 0.98);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 1.5px solid #630D16;
+            box-sizing: border-box;
+        }
+
+        .main-content {
+            flex: 1;
+            padding-top: 160px; /* Space for the bigger nav */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-style: italic;
+            color: #630D16;
+            margin: 0 0 10px 0;
+        }
+
+        /* --- Grid & Card Logic --- */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 40px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .reward-card {
+            height: 380px;
+            perspective: 1000px;
+            text-decoration: none;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .reward-card:not(.locked):hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-shadow: 12px 12px 0px #8B0000;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            background: #630D16;
+            color: white;
+            overflow: hidden;
+        }
+
+        .card-back {
+            background-color: #1A1A1A; /* Black back */
+            color: #D4AF37; /* Gold text */
+            transform: rotateY(180deg);
+            border: 1px solid #D4AF37;
+        }
+
+        /* Locked State */
+        .reward-card.locked .card-front {
+            background: #e0e0e0;
+            color: #999;
+            box-shadow: 8px 8px 0px #bbb;
+            filter: grayscale(1);
+        }
+
+        .locked-shadow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(2.8);
+            font-size: 4rem;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        /* Typography */
+        .card-icon { font-size: 4rem; margin-bottom: 20px; z-index: 1; position: relative; }
+        .card-date { font-size: 0.85rem; letter-spacing: 3px; margin-bottom: 10px; opacity: 0.8; z-index: 1; text-transform: uppercase;}
+        .card-title { font-family: 'Playfair Display'; font-size: 1.8rem; font-style: italic; z-index: 1; margin: 0; }
+
+        @media (max-width: 768px) {
+            .nav-premium { padding: 0 30px; height: 70px; }
+            .rewards-grid { grid-template-columns: 1fr; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="heart-cursor"></div>
+
+    <nav class="nav-premium">
+        <div style="font-family: 'Playfair Display'; font-style: italic; font-size: 1.5rem; color: #630D16;">The Daily Rewards</div>
+        <a href="index.html" style="background: #630D16; color: #D4AF37; padding: 12px 28px; text-decoration: none; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; border: 1.5px solid #D4AF37;">Back Home</a>
+    </nav>
+
+    <div class="main-content">
+        <div id="hero-area">
+            <div class="page-header" id="hero">
+                <h1>The Week of Love</h1>
+                <p style="letter-spacing: 4px; font-size: 0.8rem; color: #D4AF37; text-align: center;">A CURATED SURPRISE FOR EVERY DAY</p>
+            </div>
+        </div>
+
+        <div class="rewards-grid" id="rewardGrid"></div>
+    </div>
+
+    <script>
+        // Glowing Gold Cursor
+        const cursor = document.getElementById('heart-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Falling Gold Hearts
+        function createFallingHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = '❤';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.top = '-20px';
+            heart.style.fontSize = Math.random() * 15 + 10 + 'px';
+            heart.style.animationDuration = Math.random() * 3 + 5 + 's';
+            heart.style.color = '#D4AF37';
+            heart.style.position = 'fixed';
+            heart.style.zIndex = '500';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 7000);
+        }
+        setInterval(createFallingHeart, 1000);
+
+        // Calendar Logic
+        const days = [
+            { d: 7, name: "Rose Day", icon: "🌹", link: "rose.html" },
+            { d: 8, name: "Propose Day", icon: "💍", link: "propose.html" },
+            { d: 9, name: "Chocolate Day", icon: "🍫", link: "chocolate.html" },
+            { d: 10, name: "Teddy Day", icon: "🧸", link: "teddy.html" },
+            { d: 11, name: "Promise Day", icon: "🤙", link: "promise.html" },
+            { d: 12, name: "Hug Day", icon: "🫂", link: "hug.html" },
+            { d: 13, name: "Kiss Day", icon: "💋", link: "kiss.html" },
+            { d: 14, name: "Valentine's", icon: "❤️", link: "valentine.html" }
+        ];
+
+        const grid = document.getElementById('rewardGrid');
+        const today = new Date().getDate();
+
+        days.forEach(day => {
+            const isLocked = today < day.d;
+            const isToday = today === day.d;
+            
+            grid.innerHTML += `
+                <div class="reward-card ${isLocked ? 'locked' : ''}">
+                    <a href="${isLocked ? '#' : day.link}" class="card-inner">
+                        <div class="card-front">
+                            ${isLocked ? `<div class="locked-shadow">${day.icon}</div>` : ''}
+                            <div class="card-date">FEBRUARY ${day.d}</div>
+                            <div class="card-icon">${isLocked ? '🔒' : day.icon}</div>
+                            <div class="card-title">${day.name}</div> <div style="margin-top: 20px; font-size: 0.7rem; letter-spacing: 3px; font-weight: 600;">
+                                ${isLocked ? 'LOCKED' : (isToday ? 'OPEN NOW' : 'REVEALED')}
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <p style="font-family: 'Playfair Display'; font-style: italic; font-size: 1rem;">
+                                Click to explore your special ${day.name} surprise...
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
