@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propose Day | The Red Chapter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="propose-style.css">
+</head>
+<body>
+    <div id="heart-cursor"></div>
+
+    <nav class="nav-premium">
+        <div class="nav-logo">Our Story</div>
+        <div class="nav-actions">
+            <a href="calendar.html" class="btn-outline">Rewards</a>
+            <a href="index.html" class="btn-solid">Home</a>
+        </div>
+    </nav>
+
+    <main class="propose-container" id="mainContainer">
+        <header class="propose-hero" id="heroHeader">
+            <h1>Before I ask you something...</h1>
+            <p>LET'S GO BACK TO WHERE WE STARTED</p>
+        </header>
+
+        <section class="memory-grid" id="memoryGrid">
+            </section>
+    </main>
+
+    <div id="proposalModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="ring-box" id="ringBox">
+                <div class="lid"></div>
+                <div class="ring">💍</div>
+                <div class="base"></div>
+            </div>
+            <h2 class="proposal-heading">Will you be my Valentine?</h2>
+            <div class="btn-group" id="btnGroup">
+                <button id="yesBtn" class="choice-btn">Yes</button>
+                <button id="noBtn" class="choice-btn">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="successSection" class="success-screen" style="display: none;">
+        <h2 class="success-message">You will be my forever. ❤️</h2>
+        <a href="index.html" class="btn-gold-outline">Back to Home</a>
+    </div>
+
+    <script src="propose.js"></script>
+</body>
+</html>

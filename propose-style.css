@@ -1,0 +1,148 @@
+/* propose-style.css */
+:root {
+    --gold: #D4AF37;
+    --burgundy: #630D16;
+    --onyx: #1A1A1A;
+}
+
+/* Perfect Nav Alignment */
+.nav-premium {
+    position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+    padding: 0 40px; display: flex; justify-content: space-between;
+    align-items: center; background: rgba(250, 249, 246, 0.98);
+    backdrop-filter: blur(15px); z-index: 1000; border-bottom: 1px solid var(--burgundy);
+    box-sizing: border-box;
+}
+
+/* Glowing Gold Cursor */
+#heart-cursor {
+    position: fixed; width: 22px; height: 22px; background: var(--gold);
+    clip-path: path('M12 4.419c-2.826-5.695-11.999-4.064-11.999 3.27 0 7.27 9.903 10.938 11.999 15.311 2.096-4.373 12-8.041 12-15.311 0-7.327-9.17-8.972-12-3.27z');
+    pointer-events: none; z-index: 10000; transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 10px var(--gold));
+}
+
+/* 3D Flip Cards */
+.memory-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px; width: 90%; max-width: 1100px; margin: 40px auto;
+}
+
+.card { height: 350px; perspective: 1000px; cursor: pointer; }
+.card-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.8s; transform-style: preserve-3d;
+}
+.card.flipped .card-inner { transform: rotateY(180deg); }
+.card-front, .card-back {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border: 1px solid rgba(0,0,0,0.1);
+}
+.card-front img { width: 100%; height: 80%; object-fit: cover; filter: sepia(0.4); }
+.card-back {
+    background: var(--onyx); color: var(--gold); transform: rotateY(180deg);
+    display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center;
+}
+
+/* Ring Box Animation */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000;
+}
+.ring-box { width: 120px; height: 120px; position: relative; perspective: 800px; margin: 0 auto 30px; }
+.lid { width: 100%; height: 50%; background: var(--burgundy); position: absolute; top: 0; transform-origin: bottom; transition: 1.5s; z-index: 3; border: 1px solid var(--gold); }
+.base { width: 100%; height: 50%; background: #4a0a10; position: absolute; bottom: 0; z-index: 1; border: 1px solid var(--gold); }
+.ring { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 3rem; opacity: 0; transition: 1s 0.5s; z-index: 2; }
+.open .lid { transform: rotateX(-110deg); }
+.open .ring { opacity: 1; filter: drop-shadow(0 0 15px var(--gold)); }
+
+.btn-group { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+.choice-btn { background: var(--burgundy); color: var(--gold); border: 1px solid var(--gold); padding: 10px 30px; font-weight: 600; cursor: pointer; }
+/* Redesigned Nav Buttons */
+.nav-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-outline {
+    text-decoration: none;
+    color: var(--burgundy);
+    border: 1.5px solid var(--burgundy);
+    padding: 8px 20px;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-solid {
+    text-decoration: none;
+    background: var(--burgundy);
+    color: white;
+    padding: 9.5px 22px;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-outline:hover { background: var(--burgundy); color: white; }
+.success-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #FAF9F6; /* Cream beige */
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 5000; text-align: center;
+}
+
+.success-message {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-size: 3.5rem;
+    color: #630D16;
+    margin-bottom: 40px;
+}
+
+.btn-home {
+    text-decoration: none;
+    background: #630D16;
+    color: #D4AF37;
+    padding: 15px 40px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: 1px solid #D4AF37;
+    transition: 0.3s;
+}
+
+.btn-home:hover {
+    background: #D4AF37;
+    color: #630D16;
+}
+/* Final Success Screen Styling */
+
+
+.btn-gold-outline {
+    text-decoration: none;
+    border: 2px solid var(--gold);
+    color: var(--burgundy);
+    padding: 15px 40px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: 0.4s;
+}
+
+.btn-gold-outline:hover { background: var(--gold); color: white; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* =================================
+   YES / NO SWAP FIX (ADD ONLY THIS)
+================================= */
+
+#btnGroup.swap {
+    flex-direction: row-reverse;
+}
