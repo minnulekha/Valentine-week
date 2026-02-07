@@ -1,3 +1,6 @@
+/* =====================================================
+   1. FONTS & VARIABLES
+   ===================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap');
 
 :root {
@@ -10,88 +13,42 @@
     --vintage-filter: sepia(0.5) contrast(1.1) brightness(0.8) saturate(0.6) grayscale(0.1);
 }
 
-/* Custom Shiny Gold Cursor */
-* { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+/* =====================================================
+   2. GLOBAL STYLES & CUSTOM CURSOR
+   ===================================================== */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    cursor: none; /* Disables default cursor for gold heart */
+}
+
+body { 
+    background-color: var(--cream-beige); 
+    color: var(--burgundy); 
+    font-family: 'Poppins', sans-serif; 
+    overflow-x: hidden; 
+}
 
 #heart-cursor {
     position: fixed;
-    width: 22px; height: 22px;
+    width: 22px; 
+    height: 22px;
     background: var(--gold);
     clip-path: path('M12 4.419c-2.826-5.695-11.999-4.064-11.999 3.27 0 7.27 9.903 10.938 11.999 15.311 2.096-4.373 12-8.041 12-15.311 0-7.327-9.17-8.972-12-3.27z');
-    pointer-events: none; z-index: 10000;
+    pointer-events: none; 
+    z-index: 10000;
     transform: translate(-50%, -50%);
     filter: drop-shadow(0 0 10px var(--gold));
 }
 
-body { background-color: var(--cream-beige); color: var(--burgundy); font-family: 'Poppins', sans-serif; overflow-x: hidden; }
-
-/* Hero Section Hearts */
-.heart-particle {
-    position: absolute;
-    color: var(--gold);
-    pointer-events: none;
-    animation: fall linear forwards;
-}
-@keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
-
-/* Horizontal Film-Strip Logic */
-.zigzag-section { background-color: var(--burgundy); padding: 120px 0; display: flex; justify-content: center; }
-.horizontal-flow { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; width: 95%; max-width: 1200px; }
-
-/* Flip Card: Black Back Side */
-.flip-card { width: 180px; height: 280px; perspective: 1000px; }
-.flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
-.flip-card:hover .flip-inner { transform: rotateY(180deg); }
-.flip-front, .flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: white; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-
-.flip-front img { width: 100%; height: 220px; object-fit: cover; filter: var(--vintage-filter); }
-.flip-back { background-color: var(--onyx); color: white; transform: rotateY(180deg); display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-.flip-back p { font-family: 'Playfair Display'; font-style: italic; font-size: 0.9rem; }
-
-/* Section Verticals */
-.up { transform: translateY(-40px) rotate(-2deg); }
-.down { transform: translateY(40px) rotate(2deg); }
-.mid { transform: translateY(0px); }
-
-/* Black Editorial Section */
-.black-section { background-color: var(--onyx); color: white; padding: 120px 20px; text-align: center; }
-
-/* Premium Footer */
-.premium-footer { background: var(--cream-beige); padding: 80px 20px; text-align: center; border-top: 1px solid rgba(0,0,0,0.05); }
-/* Fix for broken grid alignment */
-.rewards-grid {
-    display: grid;
-    /* This creates a responsive grid of 4 columns on desktop */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 30px;
-    width: 90%;
-    max-width: 1200px;
-    margin: 40px auto;
-    justify-content: center;
-}
-
-/* Ensure text is visible against the beige background */
-.card-title, .card-date {
-    color: var(--burgundy);
-    opacity: 1 !important;
-    display: block;
-}
-
-/* Ensure the cards have height and color */
-.reward-card {
-    min-height: 300px;
-    background: var(--burgundy);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-}
-/* Premium Large Button for Surprises */
+/* =====================================================
+   3. COMPONENTS & BUTTONS
+   ===================================================== */
 .btn-premium-large {
     display: inline-block;
     background: var(--burgundy);
-    color: var(--gold); /* Using the gold from your root variables */
+    color: var(--gold); 
     padding: 18px 45px;
     text-decoration: none;
     font-family: 'Poppins', sans-serif;
@@ -111,4 +68,154 @@ body { background-color: var(--cream-beige); color: var(--burgundy); font-family
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     border-color: white;
+}
+
+/* =====================================================
+   4. HERO & FALLING ANIMATIONS
+   ===================================================== */
+.heart-particle {
+    position: absolute;
+    color: var(--gold);
+    pointer-events: none;
+    animation: fall linear forwards;
+}
+
+.falling-heart {
+    position: fixed;
+    top: -20px;
+    font-size: 1.2rem;
+    color: var(--gold);
+    user-select: none;
+    pointer-events: none;
+    z-index: 9999;
+    animation: fallAnimation linear forwards;
+}
+
+@keyframes fall { 
+    to { transform: translateY(100vh) rotate(360deg); opacity: 0; } 
+}
+
+@keyframes fallAnimation {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* =====================================================
+   5. HORIZONTAL FILM-STRIP & FLIP CARDS
+   ===================================================== */
+.zigzag-section { 
+    background-color: var(--burgundy); 
+    padding: 120px 0; 
+    display: flex; 
+    justify-content: center; 
+}
+
+.horizontal-flow { 
+    display: flex; 
+    justify-content: center; 
+    gap: 30px; 
+    flex-wrap: wrap; 
+    width: 95%; 
+    max-width: 1200px; 
+}
+
+.flip-card { 
+    width: 180px; 
+    height: 280px; 
+    perspective: 1000px; 
+}
+
+.flip-inner { 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    transition: transform 0.8s; 
+    transform-style: preserve-3d; 
+}
+
+.flip-card:hover .flip-inner { transform: rotateY(180deg); }
+
+.flip-front, .flip-back { 
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    backface-visibility: hidden; 
+    background: white; 
+    padding: 10px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+}
+
+.flip-front img { 
+    width: 100%; 
+    height: 220px; 
+    object-fit: cover; 
+    filter: var(--vintage-filter); 
+}
+
+.flip-back { 
+    background-color: var(--onyx); 
+    color: white; 
+    transform: rotateY(180deg); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    padding: 20px; 
+}
+
+.flip-back p { 
+    font-family: 'Playfair Display'; 
+    font-style: italic; 
+    font-size: 0.9rem; 
+}
+
+/* Gallery Vertical Offsets */
+.up { transform: translateY(-40px) rotate(-2deg); }
+.down { transform: translateY(40px) rotate(2deg); }
+.mid { transform: translateY(0px); }
+
+/* =====================================================
+   6. REWARDS GRID & CALENDAR
+   ===================================================== */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 30px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+    justify-content: center;
+}
+
+.reward-card {
+    min-height: 300px;
+    background: var(--burgundy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.card-title, .card-date {
+    color: var(--burgundy);
+    opacity: 1 !important;
+    display: block;
+}
+
+/* =====================================================
+   7. EDITORIAL SECTIONS & FOOTER
+   ===================================================== */
+.black-section { 
+    background-color: var(--onyx); 
+    color: white; 
+    padding: 120px 20px; 
+    text-align: center; 
+}
+
+.premium-footer { 
+    background: var(--cream-beige); 
+    padding: 80px 20px; 
+    text-align: center; 
+    border-top: 1px solid rgba(0,0,0,0.05); 
 }

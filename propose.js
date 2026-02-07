@@ -115,3 +115,33 @@ setInterval(() => {
 
     setTimeout(() => heart.remove(), 6000);
 }, 500);
+/* =========================
+   FALLING HEARTS ANIMATION
+========================= */
+
+setInterval(() => {
+    const heart = document.createElement('div');
+    heart.className = 'falling-heart';
+    heart.innerHTML = '❤';
+
+    // Random horizontal position
+    heart.style.left = Math.random() * 100 + 'vw';
+    
+    // Random size for variety
+    const size = Math.random() * 15 + 10 + 'px';
+    heart.style.fontSize = size;
+
+    // Random duration between 3s and 6s for natural flow
+    const duration = Math.random() * 3 + 3 + 's';
+    heart.style.animationDuration = duration;
+
+    // Random opacity to make it look cinematic
+    heart.style.opacity = Math.random() * 0.5 + 0.5;
+
+    document.body.appendChild(heart);
+
+    // Remove from DOM after animation ends to keep the site fast
+    setTimeout(() => {
+        heart.remove();
+    }, 6000);
+}, 500);
