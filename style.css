@@ -87,3 +87,28 @@ body { background-color: var(--cream-beige); color: var(--burgundy); font-family
     justify-content: center;
     border-radius: 4px;
 }
+/* Premium Large Button for Surprises */
+.btn-premium-large {
+    display: inline-block;
+    background: var(--burgundy);
+    color: var(--gold); /* Using the gold from your root variables */
+    padding: 18px 45px;
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    border: 1px solid var(--gold);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.btn-premium-large:hover {
+    background: var(--onyx);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border-color: white;
+}
