@@ -1,0 +1,133 @@
+/* chocolate.css */
+/* --- Navigation Fixes --- */
+.nav-premium {
+    position: fixed; top: 0; left: 0; width: 100%; height: 85px;
+    padding: 0 40px; display: flex; justify-content: space-between;
+    align-items: center; background: rgba(250, 249, 246, 0.98);
+    backdrop-filter: blur(15px); z-index: 2000; border-bottom: 1.5px solid var(--burgundy);
+    box-sizing: border-box;
+}
+
+.nav-logo { font-family: 'Playfair Display'; font-style: italic; font-size: 1.5rem; color: var(--burgundy); }
+.nav-actions { display: flex; gap: 15px; }
+
+.btn-outline { text-decoration: none; color: var(--burgundy); border: 1.5px solid var(--burgundy); padding: 8px 18px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+.btn-solid { text-decoration: none; background: var(--burgundy); color: white; padding: 10px 20px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; border: none; }
+
+/* --- Popup Modal Styling --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(26, 26, 26, 0.9); display: flex; justify-content: center;
+    align-items: center; z-index: 5000; padding: 20px;
+}
+
+.modal-content {
+    background: #FAF9F6; padding: 40px; text-align: center;
+    border: 1px solid var(--burgundy); box-shadow: 20px 20px 0px var(--burgundy);
+    max-width: 450px; width: 90%; color: var(--burgundy);
+}
+
+.tutorial-box h2, .success-box h2 { font-size: 2.2rem; margin-bottom: 15px; }
+.tutorial-box p, .success-box p { font-style: italic; opacity: 0.8; line-height: 1.6; }
+
+/* --- Chocolate Pieces & Grid --- */
+.choc-container { padding-top: 140px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #2b120a 0%, #630D16 100%); }
+
+.choc-bar { display: flex; gap: 8px; background: #1a0a05; padding: 12px; border: 1.5px solid var(--gold); border-radius: 4px; }
+.choc-piece { 
+    width: 45px; height: 55px; background: #4e2b1f; border-radius: 2px; 
+    box-shadow: inset 4px 4px 0px rgba(255,255,255,0.05), inset -4px -4px 0px rgba(0,0,0,0.3);
+    transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.choc-piece.eaten { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 60%, 15% 52%, 5% 42%, 20% 32%, 8% 22%, 25% 12%, 0% 0%); transform: scale(0.5) rotate(-15deg); opacity: 0; }
+
+.memory-game { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 90%; max-width: 800px; margin-top: 40px; }
+
+@media (max-width: 600px) {
+    .memory-game { grid-template-columns: repeat(3, 1fr); }
+    .nav-premium { padding: 0 15px; height: 75px; }
+}
+.choc-container {
+    padding-top: 140px;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; 
+    background: linear-gradient(135deg, #2b120a 0%, #630D16 100%);
+    color: var(--cream-beige); padding-bottom: 50px;
+    position: relative;
+}
+
+/* --- High-Fidelity 3D Chocolate Bar --- */
+.choc-bar {
+    display: flex; gap: 10px; background: #1a0a05; padding: 15px;
+    border-radius: 6px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+    border: 1px solid var(--gold);
+}
+
+.choc-piece {
+    width: 50px; height: 65px; background: #4e2b1f; position: relative;
+    border-radius: 3px;
+    /* Creating a luxury beveled look */
+    box-shadow: 
+        inset 5px 5px 0px rgba(255,255,255,0.08), 
+        inset -5px -5px 0px rgba(0,0,0,0.4),
+        3px 3px 10px rgba(0,0,0,0.3);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* The inner square indent on real chocolate bars */
+.choc-piece::before {
+    content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1.5px solid rgba(0,0,0,0.2); border-radius: 2px;
+}
+
+/* Jagged Bite Effect */
+.choc-piece.eaten {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 60%, 12% 52%, 2% 42%, 18% 32%, 5% 22%, 22% 12%, 0% 0%);
+    transform: scale(0.5) rotate(-15deg) translateY(40px); opacity: 0;
+}
+
+/* --- Responsive Memory Game Grid --- */
+.memory-game {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 15px; width: 92%; max-width: 850px; margin-top: 40px;
+}
+
+.choc-card { height: clamp(140px, 22vh, 210px); perspective: 1000px; cursor: pointer; }
+.card-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;
+}
+
+.choc-card.flipped .card-inner { transform: rotateY(180deg); }
+
+.card-front, .card-back {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 8px; border: 1.5px solid var(--gold);
+}
+
+.card-front { 
+    background: #2b120a; display: flex; align-items: center; 
+    justify-content: center; font-size: 2.5rem; z-index: 2; 
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.card-back { background: white; transform: rotateY(180deg); z-index: 1; overflow: hidden; }
+.card-back img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.3) contrast(1.1); }
+
+/* --- Falling Hearts Background --- */
+.heart-particle {
+    position: fixed; top: -20px; color: var(--gold);
+    pointer-events: none; z-index: 5;
+    animation: fallAnimation linear forwards;
+}
+
+@keyframes fallAnimation {
+    to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .memory-game { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .choc-piece { width: 38px; height: 50px; }
+    .nav-premium { padding: 0 20px; height: 75px; }
+}
