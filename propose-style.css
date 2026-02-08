@@ -40,8 +40,12 @@
 .btn-outline:hover { background: var(--burgundy); color: white; }
 
 /* =====================================================
-   3. MEMORY GRID (Responsive Columns)
+   3. MEMORY GRID (Responsive Columns & Nav Offset)
    ===================================================== */
+.propose-container {
+    padding-top: 100px; /* Base padding for desktop */
+}
+
 .memory-grid {
     display: grid; 
     /* Adjusts from 1 column on mobile to 3+ on desktop */
@@ -49,7 +53,24 @@
     gap: 20px; 
     width: 90%; 
     max-width: 1100px; 
-    margin: 120px auto 40px; /* Space for fixed nav */
+    margin: 40px auto; 
+}
+
+/* Mobile Alignment Fix - Pushes content down so it's not under the Nav */
+@media (max-width: 768px) {
+    .propose-container {
+        padding-top: 140px; /* Extra space specifically for mobile view */
+    }
+    
+    .propose-hero h1 {
+        font-size: 2rem; /* Slightly smaller heading for mobile fit */
+        margin-top: 10px;
+    }
+
+    .memory-grid {
+        margin-top: 30px;
+        width: 95%; /* Use more screen width on mobile */
+    }
 }
 
 .card { height: 400px; perspective: 1000px; cursor: pointer; }
@@ -73,7 +94,6 @@
     display: flex; align-items: center; justify-content: center; 
     padding: 25px; text-align: center;
 }
-
 /* =====================================================
    4. MODAL & RING BOX (Scaled for Mobile)
    ===================================================== */
