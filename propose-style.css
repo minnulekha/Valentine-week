@@ -175,3 +175,40 @@
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
     100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
+/* ================= BACK HOME BUTTON STYLE ================= */
+
+.btn-gold-outline {
+    /* 1. Layout & Sizing */
+    display: inline-block;
+    padding: 14px 35px; /* Matches the rectangular shape */
+    
+    /* 2. Colors (Burgundy Background + Gold Text) */
+    background-color: #630D16; 
+    color: #D4AF37; 
+    border: 2px solid #D4AF37; /* Gold Border */
+    
+    /* 3. Typography (Uppercase & Spaced) */
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700; /* Bold */
+    text-transform: uppercase; /* ALL CAPS */
+    letter-spacing: 3px; /* Wide spacing like the reference */
+    text-decoration: none; /* No underline */
+    
+    /* 4. Shape */
+    border-radius: 0; /* Sharp corners (No roundness) */
+    
+    /* 5. Interaction */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Hover Effect - Swaps colors for a premium feel */
+.btn-gold-outline:hover {
+    background-color: #D4AF37; /* Background becomes Gold */
+    color: #630D16; /* Text becomes Burgundy */
+    border-color: #D4AF37;
+    transform: translateY(-2px); /* Slight lift */
+    box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4);
+}

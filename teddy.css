@@ -1,0 +1,348 @@
+/* ================= GLOBAL ================= */
+:root {
+    --burgundy: #630D16;
+    --gold: #D4AF37;
+    --cream: #FAF9F6;
+    --white: #FFFFFF;
+    --shadow: 0 10px 30px rgba(99, 13, 22, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    background-color: var(--cream); color: var(--burgundy); 
+    font-family: 'Poppins', sans-serif; overflow-x: hidden; 
+    cursor: none; 
+}
+
+/* ================= CANVAS & ITEMS ================= */
+.teddy-container {
+    padding-top: 100px; padding-bottom: 50px;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+}
+
+.workshop-layout { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+
+.teddy-canvas {
+    width: 320px; height: 380px;
+    background: var(--white); border: 2px dashed var(--gold);
+    border-radius: 40px; position: relative;
+    box-shadow: var(--shadow); display: flex; justify-content: center; align-items: center;
+    overflow: hidden; touch-action: none;
+}
+.base-teddy { font-size: 14rem; z-index: 1; user-select: none; pointer-events: none; }
+
+/* Draggable Items */
+.placed-item {
+    position: absolute; font-size: 3.5rem; cursor: grab; z-index: 10;
+    user-select: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    touch-action: none; transform-origin: center center;
+    /* Transition for smooth resize/rotate, but not drag */
+    transition: transform 0.1s linear; 
+}
+.placed-item.selected {
+    border: 2px dashed var(--burgundy);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.4);
+}
+.placed-item:active { cursor: grabbing; }
+
+/* Name Tag Style */
+.placed-item.name-tag-style {
+    font-size: 1rem; background: var(--white); border: 1px solid var(--gold);
+    padding: 4px 10px; border-radius: 8px; font-weight: 600; color: var(--burgundy);
+}
+
+/* ================= EDIT CONTROLS PANEL ================= */
+.edit-controls {
+    background: var(--white); padding: 15px 25px; border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px;
+    display: flex; gap: 15px; align-items: center; justify-content: center;
+    flex-wrap: wrap; z-index: 100; border: 1px solid var(--gold);
+    animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.control-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.control-group label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--burgundy); }
+
+input[type=range] {
+    width: 80px; accent-color: var(--burgundy); height: 5px; background: #ddd; border-radius: 5px; outline: none;
+}
+
+.btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+.btn-done { background: var(--burgundy); color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+
+/* ================= INVENTORY ================= */
+.controls-panel {
+    background: var(--white); padding: 20px; border-radius: 30px;
+    box-shadow: var(--shadow); width: 90%; max-width: 400px; text-align: center;
+}
+.inventory-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+.inv-item { font-size: 2.2rem; cursor: pointer; transition: transform 0.2s; user-select: none; }
+.inv-item:hover { transform: scale(1.2); }
+
+/* ================= UTILS & NAV ================= */
+.hidden { display: none !important; }
+.nav-premium { position: fixed; top: 0; left: 0; width: 100%; height: 80px; padding: 0 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(250, 249, 246, 0.95); z-index: 1000; border-bottom: 1px solid rgba(99, 13, 22, 0.1); }
+.nav-logo { font-family: 'Playfair Display'; font-size: 1.5rem; font-weight: 700; color: var(--burgundy); }
+.btn-solid { background: var(--burgundy); color: white; padding: 8px 20px; border-radius: 30px; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+.btn-outline { border: 1.5px solid var(--burgundy); color: var(--burgundy); padding: 8px 20px; border-radius: 30px; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+
+.btn-premium-large {
+    background: var(--burgundy); color: white; padding: 15px 40px;
+    border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    box-shadow: 0 5px 20px rgba(99, 13, 22, 0.3); margin-top: 20px;
+}
+
+/* ================= POPUP ================= */
+.popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 5000; }
+/* ================= POPUP STYLES ================= */
+.popup-content {
+    background: var(--cream);
+    padding: 50px;
+    border-radius: 4px; /* Slightly sharper corners like reference */
+    text-align: center;
+    max-width: 90%;
+    width: 450px;
+    border: 2px solid var(--gold); /* Gold border for premium feel */
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Even spacing between elements */
+}
+
+.popup-content h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--burgundy);
+    font-size: 2rem;
+    margin: 0;
+}
+
+.popup-content p {
+    font-family: 'Poppins', sans-serif;
+    color: var(--burgundy);
+    opacity: 0.9;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 80%; /* Prevents text from stretching too wide */
+}
+
+/* ================= BUTTON STYLES (MATCHING REFERENCE) ================= */
+/* Base style for all premium buttons */
+.btn-premium-large, .btn-solid, .btn-done, #startHugBtn {
+    background-color: #630D16; /* Deep Burgundy */
+    color: #D4AF37; /* Gold Text */
+    border: 2px solid #D4AF37; /* Gold Border */
+    padding: 15px 40px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700; /* Bold text */
+    text-transform: uppercase; /* ALL CAPS */
+    letter-spacing: 2px; /* Spaced out letters */
+    border-radius: 0; /* Sharp corners like reference */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Hover Effect */
+.btn-premium-large:hover, .btn-solid:hover, .btn-done:hover, #startHugBtn:hover {
+    background-color: #4a0910; /* Darker Burgundy */
+    color: #FFD700; /* Brighter Gold */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Specific fix for the 'Keep Editing' button to match style but outline */
+.btn-outline {
+    background-color: transparent;
+    color: #630D16;
+    border: 2px solid #630D16;
+    padding: 15px 35px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background-color: #630D16;
+    color: #D4AF37;
+    border-color: #D4AF37;
+}
+.popup-icon { font-size: 4rem; margin-bottom: 10px; }
+
+/* Custom Cursor */
+#heart-cursor { position: fixed; font-size: 24px; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+@media (hover: none) and (pointer: coarse) { #heart-cursor { display: none; } body { cursor: auto; } }
+
+/* Hug Animation */
+.progress-container { width: 250px; height: 12px; background: #eee; border-radius: 20px; overflow: hidden; margin: 0 auto 10px; }
+.progress-bar { width: 0%; height: 100%; background: var(--burgundy); }
+.teddy-squeezing { transform: scale(0.92); filter: brightness(1.05); }
+/* ================= NAMING SECTION STYLES ================= */
+
+/* Container for input and button */
+.input-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Space between box and button */
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+/* The Text Box */
+.name-input {
+    background: #FFFFFF;
+    border: 1.5px solid var(--gold); /* Gold border */
+    border-radius: 50px; /* Fully rounded (Pill shape) */
+    padding: 12px 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    text-align: center;
+    width: 60%;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); /* Soft inner shadow */
+}
+
+/* Effect when you click inside */
+.name-input:focus {
+    border-color: var(--burgundy);
+    box-shadow: 0 0 0 3px rgba(99, 13, 22, 0.1);
+}
+
+.name-input::placeholder {
+    color: rgba(99, 13, 22, 0.4);
+    font-style: italic;
+}
+
+/* The Button */
+.btn-add {
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px; /* Fully rounded */
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(99, 13, 22, 0.2);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Hover Effect */
+.btn-add:hover {
+    background: var(--gold);
+    transform: translateY(-2px); /* Slight lift */
+    box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* Click Effect */
+.btn-add:active {
+    transform: scale(0.95);
+}
+/* ... (Keep previous CSS) ... */
+
+/* PREVIEW POPUP STYLES */
+.preview-box {
+    width: 400px;
+    max-width: 90%;
+    background: var(--cream);
+    padding: 30px;
+    border-radius: 30px;
+    border: 2px solid var(--gold);
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.preview-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--burgundy);
+    margin-bottom: 20px;
+}
+
+.snapshot-container {
+    width: 200px;
+    height: 240px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: white;
+    border: 2px dashed var(--gold);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+}
+
+.snapshot-container canvas, 
+.snapshot-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.preview-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Ensure buttons are visible */
+.btn-premium-large {
+    z-index: 100; /* Ensure clickable */
+    position: relative;
+}
+/* ================= GLOBAL CUSTOM CURSOR FIX ================= */
+
+/* 1. Hide the default system cursor on EVERYTHING */
+body, html, 
+a, button, input, 
+.nav-premium, .workshop-layout, 
+.drop-zone, .inventory-panel {
+    cursor: none !important; /* Forces system cursor to hide */
+}
+
+/* 2. Style the Golden Heart Cursor */
+#heart-cursor {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 30px; 
+    height: 30px;
+    font-size: 24px;
+    color: #D4AF37; /* Gold Color */
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); /* Gold Glow */
+    pointer-events: none; /* Allows you to click objects BEHIND the cursor */
+    z-index: 2147483647; /* Maximum possible Z-Index to stay on top of Popups/Nav */
+    transform: translate(-50%, -50%); /* Centers heart on pointer */
+    transition: transform 0.1s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3. Add a click animation for the cursor */
+#heart-cursor.clicking {
+    transform: translate(-50%, -50%) scale(0.8);
+}
+
+/* 4. Disable custom cursor on Mobile (Touch devices don't need cursors) */
+@media (hover: none) and (pointer: coarse) {
+    #heart-cursor { display: none !important; }
+    body, html, a, button, input { cursor: auto !important; }
+}

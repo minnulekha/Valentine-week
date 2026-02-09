@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teddy Workshop | The Red Chapter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="teddy.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div id="heart-cursor">❤</div>
+    
+    <div id="falling-hearts-container"></div>
+
+    <nav class="nav-premium">
+        <div class="nav-logo">Our Story</div>
+        <div class="nav-actions">
+            <a href="calendar.html" class="btn-outline">Rewards</a>
+            <a href="index.html" class="btn-solid">Home</a>
+        </div>
+    </nav>
+
+    <main class="teddy-container">
+        
+        <section id="workshopSection" class="phase-section active">
+            <header class="phase-header">
+                <h1 id="pageTitle">Teddy Workshop</h1>
+                <p id="pageSub">Tap an item to resize or tilt it! 🧸✨</p>
+            </header>
+
+            <div class="workshop-layout">
+                
+                <div class="teddy-canvas" id="teddyCanvas">
+                    <div class="base-teddy">🧸</div>
+                </div>
+
+                <div class="edit-controls hidden" id="editControls">
+                    <div class="control-group">
+                        <label>Size</label>
+                        <input type="range" id="sizeSlider" min="0.5" max="2.5" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Tilt</label>
+                        <input type="range" id="rotateSlider" min="-180" max="180" step="5" value="0">
+                    </div>
+                    <button id="deleteItemBtn" class="btn-delete">🗑️ Remove</button>
+                    <button id="closeControlsBtn" class="btn-done">✓ Done</button>
+                </div>
+
+                <div class="controls-panel" id="controlsPanel">
+                    <div class="input-group">
+                        <input type="text" id="nameInput" class="name-input" placeholder="Name your teddy..." maxlength="10">
+                        <button id="addNameBtn" class="btn-add">Add Tag</button>
+                    </div>
+
+                    <div class="inventory-grid">
+                        <div class="inv-item" data-emoji="🎀">🎀</div>
+                        <div class="inv-item" data-emoji="❤️">❤️</div>
+                        <div class="inv-item" data-emoji="👓">👓</div>
+                        <div class="inv-item" data-emoji="🎩">🎩</div>
+                        <div class="inv-item" data-emoji="👑">👑</div>
+                        <div class="inv-item" data-emoji="🧣">🧣</div>
+                        <div class="inv-item" data-emoji="✨">✨</div>
+                        <div class="inv-item" data-emoji="💗">💗</div>
+                        <div class="inv-item" data-emoji="🌹">🌹</div>
+                        <div class="inv-item" data-emoji="🍼">🍼</div>
+                    </div>
+                </div>
+
+                <div id="hugControls" class="hug-controls hidden">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="hugProgress"></div>
+                    </div>
+                    <p class="hug-instruction">Press & Hold to Hug!</p>
+                </div>
+            </div>
+
+            <div class="action-area" id="mainActionArea">
+                <button class="btn-premium-large" id="finishBuildBtn">✓ I'm Done!</button>
+            </div>
+        </section>
+
+        <div id="previewPopup" class="popup-overlay hidden">
+    <div class="popup-content preview-box">
+        <h2 class="preview-title">Your Masterpiece!</h2>
+        
+        <div id="teddySnapshot" class="snapshot-container">
+            </div>
+        
+        <p>Ready to give him a squeeze?</p>
+        
+        <div class="preview-actions">
+            <button class="btn-outline" id="editMoreBtn">Keep Editing</button>
+            <button class="btn-solid" id="startHugBtn">Give Him a Hug ❤️</button>
+        </div>
+    </div>
+</div>
+
+<div id="finalPopup" class="popup-overlay hidden">
+    <div class="popup-content">
+        <div class="popup-icon">🧸❤️</div>
+        <h2>Happy Teddy Day!</h2>
+        <p>If I were there, I’d hug you like this every day.</p>
+        <a href="calendar.html" class="btn-solid">BACK TO CALENDAR</a>
+    </div>
+</div>
+
+    </main>
+    <script src="teddy.js"></script>
+</body>
+</html>
