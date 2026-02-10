@@ -9,8 +9,8 @@ const CONFIG = {
     speedMax: 0.025,
     colors: {
         road: '#2A0509',
-        roadLine: 'rgba(255, 215, 0, 0.5)', 
-        laneHighlight: 'rgba(255, 255, 255, 0.05)', 
+        roadLine: 'rgba(255, 215, 0, 0.6)', 
+        laneHighlight: 'rgba(255, 255, 255, 0.08)', 
         skyTop: '#1a0505',
         skyBot: '#4a080d'
     }
@@ -260,8 +260,7 @@ function draw() {
     roadGrad.addColorStop(0, '#1a0000');
     roadGrad.addColorStop(1, '#2d0505');
     
-    // Calculate Road Boundaries
-    // We use "lane -1.8" and "lane 3.8" to draw the road edges wider than the play lanes
+    // Calculate Road Boundaries (Wider)
     const pFarLeft = getScreenPos(-0.8, 0); 
     const pFarRight = getScreenPos(2.8, 0);
     const pNearLeft = getScreenPos(-0.8, 1);
