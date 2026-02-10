@@ -9,8 +9,8 @@ const CONFIG = {
     speedMax: 0.025,
     colors: {
         road: '#2A0509',
-        roadLine: 'rgba(255, 215, 0, 0.5)', // Brighter Gold Lines
-        laneHighlight: 'rgba(255, 255, 255, 0.05)', // Subtle lane markers
+        roadLine: 'rgba(255, 215, 0, 0.5)', 
+        laneHighlight: 'rgba(255, 255, 255, 0.05)', 
         skyTop: '#1a0505',
         skyBot: '#4a080d'
     }
@@ -219,7 +219,7 @@ function updateHUD() {
     document.getElementById('livesContainer').innerText = '❤️ '.repeat(state.lives);
 }
 
-// --- RENDERER (ENHANCED UI) ---
+// --- RENDERER (WIDER & CLEARER) ---
 function getScreenPos(laneX, z, yOffset = 0) {
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -230,8 +230,14 @@ function getScreenPos(laneX, z, yOffset = 0) {
     
     const screenY = horizonY + (scale * groundHeight) - (yOffset * scale * 400);
     const centerX = w / 2;
-    const roadWidth = (w * 0.02) + (w * 0.9 * scale);
-    const screenX = centerX + ((laneX - 1) * (roadWidth / 2.5));
+    
+    // WIDENED ROAD MATH
+    // Road width at horizon (z=0) is now 10% of screen (was 2%)
+    // Road width at bottom (z=1) is now 150% of screen (was 90%)
+    const roadWidth = (w * 0.1) + (w * 1.5 * scale);
+    
+    // Spread lanes further apart
+    const screenX = centerX + ((laneX - 1) * (roadWidth / 3.5)); // Divide by 3.5 instead of 2.5 for spread
 
     return { x: screenX, y: screenY, scale: scale, roadW: roadWidth };
 }
@@ -249,16 +255,17 @@ function draw() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, hY);
 
-    // 2. Road Background (Darker for contrast)
+    // 2. Road Background
     const roadGrad = ctx.createLinearGradient(0, hY, 0, h);
     roadGrad.addColorStop(0, '#1a0000');
     roadGrad.addColorStop(1, '#2d0505');
     
-    // Draw Road Base
-    const pFarLeft = getScreenPos(-0.5, 0);
-    const pFarRight = getScreenPos(2.5, 0);
-    const pNearLeft = getScreenPos(-0.5, 1);
-    const pNearRight = getScreenPos(2.5, 1);
+    // Calculate Road Boundaries
+    // We use "lane -1.8" and "lane 3.8" to draw the road edges wider than the play lanes
+    const pFarLeft = getScreenPos(-0.8, 0); 
+    const pFarRight = getScreenPos(2.8, 0);
+    const pNearLeft = getScreenPos(-0.8, 1);
+    const pNearRight = getScreenPos(2.8, 1);
 
     ctx.fillStyle = roadGrad;
     ctx.beginPath();
@@ -271,10 +278,11 @@ function draw() {
     // 3. Lane Markers (Clearer Paths)
     ctx.fillStyle = CONFIG.colors.laneHighlight;
     for(let i=0; i<3; i++) {
-        const p1 = getScreenPos(i - 0.45, 0);
-        const p2 = getScreenPos(i + 0.45, 0);
-        const p3 = getScreenPos(i + 0.45, 1);
-        const p4 = getScreenPos(i - 0.45, 1);
+        // Draw a wide strip for each lane
+        const p1 = getScreenPos(i - 0.3, 0);
+        const p2 = getScreenPos(i + 0.3, 0);
+        const p3 = getScreenPos(i + 0.3, 1);
+        const p4 = getScreenPos(i - 0.3, 1);
         
         ctx.beginPath();
         ctx.moveTo(p1.x, hY);
@@ -284,24 +292,26 @@ function draw() {
         ctx.fill();
     }
 
-    // 4. Lane Lines (Gold)
+    // 4. Lane Dividers
     ctx.strokeStyle = CONFIG.colors.roadLine;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    for (let i = 0; i <= 3; i++) {
-        const topX = getScreenPos(i - 1.5, 0).x;
-        const botX = getScreenPos(i - 1.5, 1).x;
-        ctx.moveTo(topX, hY);
-        ctx.lineTo(botX, h);
-    }
+    // Lines between lanes (at 0.5 and 1.5)
+    const dividers = [-0.5, 0.5, 1.5, 2.5];
+    dividers.forEach(d => {
+        const top = getScreenPos(d, 0);
+        const bot = getScreenPos(d, 1);
+        ctx.moveTo(top.x, hY);
+        ctx.lineTo(bot.x, h);
+    });
     ctx.stroke();
 
-    // 5. Player Marker (Target Ring)
+    // 5. Player Marker
     const pCenter = getScreenPos(player.x, 0.9);
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.ellipse(pCenter.x, pCenter.y + 40, 50, 15, 0, 0, Math.PI*2);
+    ctx.ellipse(pCenter.x, pCenter.y + 40, 60, 20, 0, 0, Math.PI*2);
     ctx.stroke();
 
     // 6. Objects
@@ -313,18 +323,14 @@ function draw() {
         const p = getScreenPos(xPos, obj.z);
         const size = 60 * p.scale;
 
-        // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.beginPath();
         ctx.ellipse(p.x, p.y + size/2, size/1.5, size/5, 0, 0, Math.PI*2);
         ctx.fill();
 
-        // Icon
         ctx.font = `${size}px serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
-        // High Contrast Text for readability
         ctx.fillStyle = '#FFF'; 
         ctx.fillText(obj.icon, p.x, p.y);
     });
@@ -335,11 +341,8 @@ function draw() {
     
     ctx.save();
     ctx.translate(pp.x, pp.y);
-    
-    // Lean effect
     const lean = (player.x - player.lane) * -0.2;
     ctx.rotate(lean);
-    
     player.runAnim += 0.2;
     if (!player.isJumping) ctx.translate(0, Math.sin(player.runAnim) * 5);
     
