@@ -346,3 +346,18 @@ a, button, input,
     #heart-cursor { display: none !important; }
     body, html, a, button, input { cursor: auto !important; }
 }
+.falling-heart{
+    position:fixed;
+    top:-20px;
+    color:#D4AF37;
+    pointer-events:none;
+    z-index:9999;
+    animation:fall linear forwards;
+}
+
+@keyframes fall{
+    to{
+        transform:translateY(110vh) rotate(360deg);
+        opacity:0;
+    }
+}
