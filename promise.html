@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Promise Runner | The Red Chapter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="promise.css">
+</head>
+<body>
+<script src="lock.js"></script>
+
+    <div id="gameUI" class="ui-layer">
+        
+        <div class="hud-header">
+            <div class="score-box">
+                <span class="label">PROMISES</span>
+                <span id="scoreVal">0</span>
+            </div>
+            <div class="lives-box" id="livesContainer">❤️❤️❤️</div>
+        </div>
+
+        <div id="activePowerups" class="powerup-container">
+            <div id="magnetBadge" class="p-badge hidden">🧲 MAGNET</div>
+            <div id="shieldBadge" class="p-badge hidden">🛡️ SHIELD</div>
+        </div>
+
+        <div id="startScreen" class="modal-overlay">
+            <div class="modal-box">
+                <h1 class="title">Promise Runner</h1>
+                <p class="subtitle">Collect the rings & promises to build a future.</p>
+                
+                <div class="items-grid">
+                    <div class="item">💍 <span>Collect</span></div>
+                    <div class="item">🚧 <span>Dodge</span></div>
+                    <div class="item">🧲 <span>Magnet</span></div>
+                </div>
+
+                <div class="tutorial">
+                    <div class="tut-row"><span class="icon">↔️</span> Swipe to Move</div>
+                    <div class="tut-row"><span class="icon">👆</span> Tap to Jump</div>
+                </div>
+
+                <button id="startBtn" class="btn-start">START RUNNING</button>
+            </div>
+        </div>
+
+        <div id="gameOverScreen" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h2 class="title">Journey Ended</h2>
+                <p class="subtitle">But promises are forever. Try again?</p>
+                
+                <div class="score-report">
+                    <div class="report-item">
+                        <span>Score</span>
+                        <h3 id="finalScore">0</h3>
+                    </div>
+                    <div class="report-item">
+                        <span>Best</span>
+                        <h3 id="highScore">0</h3>
+                    </div>
+                </div>
+
+                <button id="restartBtn" class="btn-start">TRY AGAIN</button>
+                <a href="calendar.html" class="btn-link">Back to Calendar</a>
+            </div>
+        </div>
+
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="promise.js"></script>
+</body>
+</html>

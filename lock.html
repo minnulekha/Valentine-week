@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Private Valentine Space</title>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Poppins,sans-serif;
+    background:linear-gradient(135deg,#630D16,#1a1a1a);
+}
+
+.lock-box{
+    background:#FAF9F6;
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    width:90%;
+    max-width:340px;
+    box-shadow:0 25px 70px rgba(0,0,0,0.3);
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:15px;
+    border-radius:10px;
+    border:1px solid #630D16;
+}
+
+button{
+    margin-top:15px;
+    padding:10px 20px;
+    background:#630D16;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.msg{
+    color:red;
+    font-size:0.8rem;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="lock-box">
+    <h2>🔒 Only For Us ❤️</h2>
+    <p>Enter our secret code</p>
+
+    <input id="codeInput" type="password" placeholder="Secret code">
+    <button onclick="unlock()">Unlock</button>
+
+    <p id="msg" class="msg"></p>
+</div>
+
+<script>
+const SECRET_CODE = "minnu123"; // ❤️ change your code here
+
+function unlock(){
+    const val = document.getElementById("codeInput").value;
+
+    if(val === SECRET_CODE){
+
+        localStorage.setItem("valentineUnlocked","true");
+
+        const next = sessionStorage.getItem("redirectAfterLock") || "index.html";
+
+        window.location.href = next;
+
+    } else {
+        document.getElementById("msg").innerText = "Wrong code 😢";
+    }
+}
+</script>
+
+</body>
+</html>
