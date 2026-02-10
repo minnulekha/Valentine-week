@@ -357,7 +357,7 @@ function draw() {
         ctx.fillText(obj.icon, p.x, p.y);
     });
 
-    // 7. Player
+   // 7. Player
     const pp = getScreenPos(player.x, 0.9, player.y);
     const pSize = 90;
     
@@ -373,11 +373,23 @@ function draw() {
     ctx.textBaseline = 'middle';
     ctx.fillText('🏃', 0, 0);
     
+    // --- NEW SHIELD DESIGN (Translucent Energy Bubble) ---
     if (player.shield) {
-        ctx.strokeStyle = 'cyan';
+        // Pulsing effect
+        const pulse = Math.sin(player.runAnim * 2) * 3;
+        const shieldSize = 50 + pulse;
+
+        // Translucent fill
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.25)'; 
+        ctx.beginPath();
+        ctx.arc(0, -10, shieldSize, 0, Math.PI*2); // Offset slightly up
+        ctx.fill();
+
+        // Inner glowing edge
+        ctx.strokeStyle = 'rgba(150, 255, 255, 0.6)';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(0, 0, 40, 0, Math.PI*2);
+        ctx.arc(0, -10, shieldSize - 2, 0, Math.PI*2);
         ctx.stroke();
     }
     
