@@ -6,7 +6,7 @@ const CONFIG = {
     gravity: 0.0025,
     jumpForce: 0.055, 
     speedStart: 0.007,
-    speedMax: 0.025,
+    speedMax: 0.03, // Slightly faster max speed
     colors: {
         road: '#2A0509',
         roadLine: 'rgba(255, 215, 0, 0.6)', 
@@ -44,8 +44,6 @@ let player = {
     runAnim: 0
 };
 
-const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
 // --- INIT ---
 function resize() {
     const dpr = Math.min(window.devicePixelRatio, 2); 
@@ -67,25 +65,51 @@ function handleInput(action) {
     }
 }
 
+// Keyboard
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') handleInput('left');
     if (e.key === 'ArrowRight') handleInput('right');
     if (e.key === ' ' || e.key === 'ArrowUp') handleInput('jump');
 });
 
-let touchX = 0, touchY = 0;
+// Touch (Updated for 3-Zone Tapping)
+let touchStartX = 0;
+let touchStartY = 0;
+
 document.addEventListener('touchstart', e => {
-    touchX = e.touches[0].clientX;
-    touchY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
 }, {passive: false});
 
 document.addEventListener('touchend', e => {
     if (!state.running) return;
-    let dx = e.changedTouches[0].clientX - touchX;
-    let dy = e.changedTouches[0].clientY - touchY;
     
-    if (Math.abs(dx) > 30) handleInput(dx > 0 ? 'right' : 'left');
-    else if (dy < -30 || Math.abs(dx) < 10) handleInput('jump');
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    
+    // 1. Detect Swipe (Jump or Dash)
+    if (Math.abs(dy) > 50 && dy < 0) {
+        handleInput('jump'); // Swipe Up
+        return;
+    }
+    if (Math.abs(dx) > 50) {
+        handleInput(dx > 0 ? 'right' : 'left'); // Swipe Left/Right
+        return;
+    }
+
+    // 2. Detect Tap Zones (If not swiping)
+    const width = window.innerWidth;
+    if (touchEndX < width / 3) {
+        player.lane = 0; // Left Zone
+    } else if (touchEndX > (width / 3) * 2) {
+        player.lane = 2; // Right Zone
+    } else {
+        // Center Zone: Jump if already in center, else move to center
+        if (player.lane === 1) handleInput('jump');
+        else player.lane = 1;
+    }
 }, {passive: false});
 
 // --- GAME LOGIC ---
@@ -219,25 +243,25 @@ function updateHUD() {
     document.getElementById('livesContainer').innerText = '❤️ '.repeat(state.lives);
 }
 
-// --- RENDERER (WIDER & CLEARER) ---
+// --- RENDERER (MOBILE OPTIMIZED: 3 EQUAL LANES) ---
 function getScreenPos(laneX, z, yOffset = 0) {
     const w = window.innerWidth;
     const h = window.innerHeight;
     
     const horizonY = h * 0.35;
     const groundHeight = h * 0.65;
-    const scale = Math.pow(z, 2.5);
+    const scale = Math.pow(z, 2.5); // Speed curve
     
     const screenY = horizonY + (scale * groundHeight) - (yOffset * scale * 400);
     const centerX = w / 2;
     
-    // WIDENED ROAD MATH
-    // Road width at horizon (z=0) is now 10% of screen (was 2%)
-    // Road width at bottom (z=1) is now 150% of screen (was 90%)
-    const roadWidth = (w * 0.1) + (w * 1.5 * scale);
+    // == UPDATED PERSPECTIVE MATH ==
+    // Horizon Width: 50% of screen (was 2%) -> Makes top path clearer
+    // Bottom Width: 100% of screen (was 90%) -> Makes tapping areas equal
+    const roadWidth = (w * 0.5) + (w * 0.5 * scale);
     
-    // Spread lanes further apart
-    const screenX = centerX + ((laneX - 1) * (roadWidth / 3.5)); // Divide by 3.5 instead of 2.5 for spread
+    // Lane Spread divisor: 3 (Exact thirds)
+    const screenX = centerX + ((laneX - 1) * (roadWidth / 3));
 
     return { x: screenX, y: screenY, scale: scale, roadW: roadWidth };
 }
@@ -260,11 +284,11 @@ function draw() {
     roadGrad.addColorStop(0, '#1a0000');
     roadGrad.addColorStop(1, '#2d0505');
     
-    // Calculate Road Boundaries (Wider)
-    const pFarLeft = getScreenPos(-0.8, 0); 
-    const pFarRight = getScreenPos(2.8, 0);
-    const pNearLeft = getScreenPos(-0.8, 1);
-    const pNearRight = getScreenPos(2.8, 1);
+    // Boundaries are now at -1.5 and 1.5 logic coordinates (outside lanes 0 and 2)
+    const pFarLeft = getScreenPos(-1.5, 0); 
+    const pFarRight = getScreenPos(3.5, 0);
+    const pNearLeft = getScreenPos(-1.5, 1);
+    const pNearRight = getScreenPos(3.5, 1);
 
     ctx.fillStyle = roadGrad;
     ctx.beginPath();
@@ -274,14 +298,14 @@ function draw() {
     ctx.lineTo(pNearLeft.x, h);
     ctx.fill();
 
-    // 3. Lane Markers (Clearer Paths)
+    // 3. Lane Markers (Dividing the screen in 3)
     ctx.fillStyle = CONFIG.colors.laneHighlight;
     for(let i=0; i<3; i++) {
-        // Draw a wide strip for each lane
-        const p1 = getScreenPos(i - 0.3, 0);
-        const p2 = getScreenPos(i + 0.3, 0);
-        const p3 = getScreenPos(i + 0.3, 1);
-        const p4 = getScreenPos(i - 0.3, 1);
+        // Highlight logic for each lane
+        const p1 = getScreenPos(i - 0.48, 0);
+        const p2 = getScreenPos(i + 0.48, 0);
+        const p3 = getScreenPos(i + 0.48, 1);
+        const p4 = getScreenPos(i - 0.48, 1);
         
         ctx.beginPath();
         ctx.moveTo(p1.x, hY);
@@ -295,9 +319,8 @@ function draw() {
     ctx.strokeStyle = CONFIG.colors.roadLine;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    // Lines between lanes (at 0.5 and 1.5)
-    const dividers = [-0.5, 0.5, 1.5, 2.5];
-    dividers.forEach(d => {
+    // Dividers at 0.5 and 1.5
+    [0.5, 1.5].forEach(d => {
         const top = getScreenPos(d, 0);
         const bot = getScreenPos(d, 1);
         ctx.moveTo(top.x, hY);
@@ -365,13 +388,13 @@ function draw() {
 }
 
 function spawnParticles(laneX, type) {
-    if (isMobile && state.particles.length > 20) return;
+    // Mobile optimization
+    if (state.particles.length > 20) return;
     
     const p = getScreenPos(laneX, 0.9);
     const color = type === 'gold' ? '#D4AF37' : (type === 'red' ? '#8B0000' : '#FFF');
-    const count = isMobile ? 5 : 10;
     
-    for(let i=0; i<count; i++) {
+    for(let i=0; i<6; i++) {
         state.particles.push({
             x: p.x, y: p.y,
             vx: (Math.random()-0.5)*10,
@@ -390,7 +413,7 @@ function drawParticles() {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, isMobile ? 3 : 4, 0, Math.PI*2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
         ctx.fill();
         ctx.globalAlpha = 1;
     });
