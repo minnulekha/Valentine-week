@@ -1,5 +1,5 @@
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: false }); // Optimization: alpha false for background
+const ctx = canvas.getContext('2d', { alpha: false });
 
 // --- SETTINGS ---
 const CONFIG = {
@@ -8,7 +8,9 @@ const CONFIG = {
     speedStart: 0.007,
     speedMax: 0.025,
     colors: {
-        roadLine: 'rgba(212, 175, 55, 0.4)',
+        road: '#2A0509',
+        roadLine: 'rgba(255, 215, 0, 0.5)', // Brighter Gold Lines
+        laneHighlight: 'rgba(255, 255, 255, 0.05)', // Subtle lane markers
         skyTop: '#1a0505',
         skyBot: '#4a080d'
     }
@@ -42,12 +44,10 @@ let player = {
     runAnim: 0
 };
 
-// Check if mobile for performance tuning
 const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
 // --- INIT ---
 function resize() {
-    // Optimization: Limit internal resolution on high-DPI screens to prevent lag
     const dpr = Math.min(window.devicePixelRatio, 2); 
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
@@ -67,14 +67,12 @@ function handleInput(action) {
     }
 }
 
-// Keyboard
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') handleInput('left');
     if (e.key === 'ArrowRight') handleInput('right');
     if (e.key === ' ' || e.key === 'ArrowUp') handleInput('jump');
 });
 
-// Touch (Optimized for Mobile)
 let touchX = 0, touchY = 0;
 document.addEventListener('touchstart', e => {
     touchX = e.touches[0].clientX;
@@ -86,7 +84,6 @@ document.addEventListener('touchend', e => {
     let dx = e.changedTouches[0].clientX - touchX;
     let dy = e.changedTouches[0].clientY - touchY;
     
-    // Lower threshold for better response
     if (Math.abs(dx) > 30) handleInput(dx > 0 ? 'right' : 'left');
     else if (dy < -30 || Math.abs(dx) < 10) handleInput('jump');
 }, {passive: false});
@@ -130,7 +127,7 @@ function gameOver() {
 function spawnObject() {
     const lane = Math.floor(Math.random() * 3);
     const r = Math.random();
-    const diff = Math.min(state.score / 500, 0.4); // Difficulty scaling
+    const diff = Math.min(state.score / 500, 0.4); 
     
     let type = 'good';
     let icon = ITEMS.good[Math.floor(Math.random() * ITEMS.good.length)];
@@ -149,11 +146,9 @@ function spawnObject() {
 function loop() {
     if (!state.running) return;
 
-    // Logic updates
     let targetSpeed = CONFIG.speedStart + (state.score * 0.00005);
     state.speed = Math.min(targetSpeed, CONFIG.speedMax);
 
-    // Player Physics
     player.x += (player.lane - player.x) * 0.2;
     if (player.isJumping) {
         player.y += player.vy;
@@ -169,10 +164,8 @@ function loop() {
         }
     }
 
-    // Spawning (Frame limiter)
     if (state.frame++ % Math.floor(60 / (state.speed * 100)) === 0) spawnObject();
 
-    // Object Updates
     state.objects.forEach(obj => {
         obj.z += state.speed;
 
@@ -180,10 +173,9 @@ function loop() {
             obj.xPos += (player.x - obj.xPos) * 0.15;
         }
 
-        // Collision: Z range 0.85-0.95, X range < 0.4
         if (obj.active && obj.z > 0.85 && obj.z < 0.95) {
             if (Math.abs(obj.xPos - player.x) < 0.4) {
-                if (obj.type === 'wall' && player.y > 0.1) { /* Safe jump */ }
+                if (obj.type === 'wall' && player.y > 0.1) { }
                 else if (player.y < 0.1 || obj.type !== 'wall') handleHit(obj);
             }
         }
@@ -227,9 +219,8 @@ function updateHUD() {
     document.getElementById('livesContainer').innerText = '❤️ '.repeat(state.lives);
 }
 
-// --- RENDERER (OPTIMIZED) ---
+// --- RENDERER (ENHANCED UI) ---
 function getScreenPos(laneX, z, yOffset = 0) {
-    // Use window.innerWidth/Height directly for logic positions to decouple from DPI scaling
     const w = window.innerWidth;
     const h = window.innerHeight;
     
@@ -242,17 +233,15 @@ function getScreenPos(laneX, z, yOffset = 0) {
     const roadWidth = (w * 0.02) + (w * 0.9 * scale);
     const screenX = centerX + ((laneX - 1) * (roadWidth / 2.5));
 
-    return { x: screenX, y: screenY, scale: scale };
+    return { x: screenX, y: screenY, scale: scale, roadW: roadWidth };
 }
 
 function draw() {
-    // Use logical size for clearRect
     const w = window.innerWidth;
     const h = window.innerHeight;
-    
     ctx.clearRect(0, 0, w, h);
 
-    // 1. Static Gradient Background (Faster than clearing with color)
+    // 1. Sky
     const hY = h * 0.35;
     const grad = ctx.createLinearGradient(0, 0, 0, hY);
     grad.addColorStop(0, CONFIG.colors.skyTop);
@@ -260,27 +249,62 @@ function draw() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, hY);
 
-    // 2. Road Lines
+    // 2. Road Background (Darker for contrast)
+    const roadGrad = ctx.createLinearGradient(0, hY, 0, h);
+    roadGrad.addColorStop(0, '#1a0000');
+    roadGrad.addColorStop(1, '#2d0505');
+    
+    // Draw Road Base
+    const pFarLeft = getScreenPos(-0.5, 0);
+    const pFarRight = getScreenPos(2.5, 0);
+    const pNearLeft = getScreenPos(-0.5, 1);
+    const pNearRight = getScreenPos(2.5, 1);
+
+    ctx.fillStyle = roadGrad;
+    ctx.beginPath();
+    ctx.moveTo(pFarLeft.x, hY);
+    ctx.lineTo(pFarRight.x, hY);
+    ctx.lineTo(pNearRight.x, h);
+    ctx.lineTo(pNearLeft.x, h);
+    ctx.fill();
+
+    // 3. Lane Markers (Clearer Paths)
+    ctx.fillStyle = CONFIG.colors.laneHighlight;
+    for(let i=0; i<3; i++) {
+        const p1 = getScreenPos(i - 0.45, 0);
+        const p2 = getScreenPos(i + 0.45, 0);
+        const p3 = getScreenPos(i + 0.45, 1);
+        const p4 = getScreenPos(i - 0.45, 1);
+        
+        ctx.beginPath();
+        ctx.moveTo(p1.x, hY);
+        ctx.lineTo(p2.x, hY);
+        ctx.lineTo(p3.x, h);
+        ctx.lineTo(p4.x, h);
+        ctx.fill();
+    }
+
+    // 4. Lane Lines (Gold)
     ctx.strokeStyle = CONFIG.colors.roadLine;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     for (let i = 0; i <= 3; i++) {
-        const topX = (w/2) + (i - 1.5) * (w * 0.02);
-        const botX = (w/2) + (i - 1.5) * (w * 0.5);
+        const topX = getScreenPos(i - 1.5, 0).x;
+        const botX = getScreenPos(i - 1.5, 1).x;
         ctx.moveTo(topX, hY);
         ctx.lineTo(botX, h);
     }
     ctx.stroke();
 
-    // 3. Highlight Player Lane
+    // 5. Player Marker (Target Ring)
     const pCenter = getScreenPos(player.x, 0.9);
-    ctx.fillStyle = 'rgba(212, 175, 55, 0.1)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.ellipse(pCenter.x, pCenter.y + 40, 60, 20, 0, 0, Math.PI*2);
-    ctx.fill();
+    ctx.ellipse(pCenter.x, pCenter.y + 40, 50, 15, 0, 0, Math.PI*2);
+    ctx.stroke();
 
-    // 4. Objects
-    // Sort logic handled in update usually, but okay here for small counts
+    // 6. Objects
     state.objects.sort((a,b) => a.z - b.z);
     
     state.objects.forEach(obj => {
@@ -289,8 +313,8 @@ function draw() {
         const p = getScreenPos(xPos, obj.z);
         const size = 60 * p.scale;
 
-        // Optimized Shadow (Simple Alpha Circle)
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.beginPath();
         ctx.ellipse(p.x, p.y + size/2, size/1.5, size/5, 0, 0, Math.PI*2);
         ctx.fill();
@@ -300,26 +324,22 @@ function draw() {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Manual Fake Shadow for Performance (Draw black offset instead of shadowBlur)
-        if (obj.type === 'good') {
-            ctx.fillStyle = 'rgba(212,175,55,0.5)'; // Gold Glow fake
-            ctx.fillText(obj.icon, p.x, p.y);
-        }
-        
-        ctx.fillStyle = '#FFF'; // Reset color if needed, emoji handles itself mostly
+        // High Contrast Text for readability
+        ctx.fillStyle = '#FFF'; 
         ctx.fillText(obj.icon, p.x, p.y);
     });
 
-    // 5. Player
+    // 7. Player
     const pp = getScreenPos(player.x, 0.9, player.y);
     const pSize = 90;
     
     ctx.save();
     ctx.translate(pp.x, pp.y);
+    
+    // Lean effect
     const lean = (player.x - player.lane) * -0.2;
     ctx.rotate(lean);
     
-    // Animation
     player.runAnim += 0.2;
     if (!player.isJumping) ctx.translate(0, Math.sin(player.runAnim) * 5);
     
@@ -328,7 +348,6 @@ function draw() {
     ctx.textBaseline = 'middle';
     ctx.fillText('🏃', 0, 0);
     
-    // Simple Shield Circle
     if (player.shield) {
         ctx.strokeStyle = 'cyan';
         ctx.lineWidth = 3;
@@ -339,17 +358,15 @@ function draw() {
     
     ctx.restore();
 
-    // 6. Particles
+    // 8. Particles
     drawParticles();
 }
 
 function spawnParticles(laneX, type) {
-    if (isMobile && state.particles.length > 20) return; // Cap particles on mobile
+    if (isMobile && state.particles.length > 20) return;
     
     const p = getScreenPos(laneX, 0.9);
     const color = type === 'gold' ? '#D4AF37' : (type === 'red' ? '#8B0000' : '#FFF');
-    
-    // Reduce count for mobile
     const count = isMobile ? 5 : 10;
     
     for(let i=0; i<count; i++) {
@@ -365,7 +382,7 @@ function spawnParticles(laneX, type) {
 function drawParticles() {
     state.particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy;
-        p.life -= 0.08; // Fade faster
+        p.life -= 0.08;
         if (p.life <= 0) state.particles.splice(i, 1);
         
         ctx.globalAlpha = p.life;
