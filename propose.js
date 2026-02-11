@@ -3,12 +3,12 @@
 ===================================================== */
 
 const memoryData = [
-    { t: "The First Text", m: "That night you texted me 'not sleeping?'... I didn't know it was the start of everything.", i: "assets/pro1.jpeg" },
-    { t: "The 10s Call", m: "Our first call lasted 10 seconds, but somehow it felt special.", i: "assets/pro2.jpeg" },
-    { t: "Late Night Talks", m: "Somewhere between those calls, you became my home.", i: "assets/pro3.jpeg" },
-    { t: "The Support", m: "You stayed when things were heavy. You became my strength.", i: "assets/pro4.jpeg" },
-    { t: "The Miles", m: "Distance taught us that our love is stronger than geography.", i: "assets/pro5.jpeg" },
-    { t: "The Future", m: "I want every chapter of my life to have you in it.", i: "assets/pro6.jpeg" }
+    { t: "The First Text", m: "That night you texted me 'not sleeping?'... I didn't know it was the start of everything.", i: "assets/pro1.png" },
+    { t: "The 10s Call", m: "Our first call lasted 10 seconds, but somehow it felt special.", i: "assets/pro2.png" },
+    { t: "Late Night Talks", m: "Somewhere between those calls, you became my home.", i: "assets/pro3.png" },
+    { t: "The Support", m: "You stayed when things were heavy. You became my strength.", i: "assets/pro4.png" },
+    { t: "The Miles", m: "Distance taught us that our love is stronger than geography.", i: "assets/pro5.png" },
+    { t: "The Future", m: "I want every chapter of my life to have you in it.", i: "assets/pro6.png" }
 ];
 
 /* =========================

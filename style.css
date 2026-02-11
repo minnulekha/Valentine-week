@@ -10,7 +10,7 @@
     --onyx: #1A1A1A;
     --gold: #D4AF37;
     /* Cinematic Vintage Filter: Warm Brownish-Black Tone */
-    --vintage-filter: sepia(0.5) contrast(1.1) brightness(0.8) saturate(0.6) grayscale(0.1);
+    /* --vintage-filter: sepia(0.5) contrast(1.1) brightness(0.8) saturate(0.6) grayscale(0.1); */
 }
 
 /* =====================================================

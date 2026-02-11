@@ -3,8 +3,8 @@
    ===================================================== */
 
 const photos = [
-    'assets/choc1.jpeg', 'assets/choc2.jpeg', 'assets/choc3.jpeg',
-    'assets/choc4.jpeg', 'assets/choc5.jpeg', 'assets/choc6.jpeg'
+    'assets/choc1.png', 'assets/choc2.png', 'assets/choc3.png',
+    'assets/choc4.png', 'assets/choc5.png', 'assets/choc6.png'
 ];
 
 let gameCards = [...photos, ...photos];
