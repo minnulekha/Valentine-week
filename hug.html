@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Journey to You | Hug Day Final</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --burgundy: #630D16;
+        --cream: #FAF9F6;
+        --gold: #D4AF37;
+        --road: #2b2b2b;
+        --glass: rgba(255, 255, 255, 0.95);
+        --shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(180deg, #e3fdfd 0%, #ffe6fa 100%);
+        color: var(--burgundy);
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* --- BACKGROUND ANIMATION --- */
+    .clouds { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    .cloud { position: absolute; font-size: 4rem; opacity: 0.8; animation: float 25s linear infinite; filter: drop-shadow(0 10px 10px rgba(255,255,255,0.8)); }
+    @keyframes float { from { transform: translateX(-150%); } to { transform: translateX(150vw); } }
+
+    /* --- HEADER --- */
+    .header {
+        position: fixed; top: 0; width: 100%; padding: 20px 0;
+        text-align: center; z-index: 100;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.5);
+    }
+    .title { font-family: 'Playfair Display'; font-size: 1.5rem; color: var(--burgundy); margin: 0; letter-spacing: 0.5px; }
+    .subtitle { font-size: 0.8rem; color: var(--gold); font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 5px; }
+
+    /* --- GAME WORLD --- */
+    #viewport { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 10; }
+    #world { position: absolute; left: 0; top: 0; width: 100%; height: 4200px; will-change: transform; }
+
+    .map-container { position: relative; width: 100%; max-width: 500px; height: 100%; margin: 0 auto; }
+    svg { width: 100%; height: 100%; overflow: visible; }
+    
+    /* Road Styling */
+    .path-grass { fill: none; stroke: #a7c957; stroke-width: 70; stroke-linecap: round; opacity: 0.5; }
+    .path-border { fill: none; stroke: #fff; stroke-width: 54; stroke-linecap: round; }
+    .path-road { fill: none; stroke: var(--road); stroke-width: 44; stroke-linecap: round; }
+    .path-line { fill: none; stroke: rgba(255,255,255,0.7); stroke-width: 2; stroke-dasharray: 25,30; stroke-linecap: round; }
+
+    /* Cities */
+    .city-group { transition: opacity 0.3s; }
+    .city-label { 
+        font-size: 12px; font-weight: 800; fill: var(--burgundy); 
+        text-transform: uppercase; text-shadow: 0 2px 0 rgba(255,255,255,0.9); letter-spacing: 0.5px;
+    }
+    .city-dot { fill: var(--cream); stroke: var(--gold); stroke-width: 4; r: 7; }
+    .reached .city-dot { fill: var(--gold); stroke: var(--burgundy); }
+
+    /* --- AVATARS --- */
+    .avatar-wrapper {
+        position: absolute; width: 75px; height: 75px; z-index: 50;
+        margin-left: -37.5px; margin-top: -37.5px;
+        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.3));
+    }
+    .avatar-img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .car-icon {
+        position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+        font-size: 2rem; z-index: 51; animation: rumble 0.2s infinite;
+    }
+    @keyframes rumble { 0%{transform: translateX(-50%) rotate(1deg);} 50%{transform: translateX(-50%) rotate(-1deg);} }
+
+    #him { top: 50px; left: 50%; } 
+    #you { top: 4100px; left: 50%; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-8px);} }
+
+    /* --- CONTROLS --- */
+    .controls {
+        position: fixed; bottom: 30px; width: 100%;
+        display: flex; justify-content: center; z-index: 100; pointer-events: none;
+    }
+    .btn-container { pointer-events: auto; }
+
+    .drive-btn {
+        background: linear-gradient(135deg, var(--burgundy), #42080e);
+        color: var(--gold); border: 2px solid var(--gold);
+        padding: 18px 60px; border-radius: 60px;
+        font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+        box-shadow: 0 10px 40px rgba(99,13,22,0.5);
+        cursor: pointer; transition: 0.1s; display: flex; align-items: center; gap: 10px;
+    }
+    .drive-btn:active { transform: scale(0.96); box-shadow: 0 5px 15px rgba(99,13,22,0.3); }
+
+    /* --- MODALS --- */
+    .overlay {
+        position: fixed; inset: 0; z-index: 200;
+        background: rgba(20, 5, 8, 0.95);
+        backdrop-filter: blur(8px);
+        display: none; flex-direction: column;
+        justify-content: center; align-items: center;
+        opacity: 0; transition: opacity 0.3s;
+    }
+    .overlay.active { opacity: 1; pointer-events: auto; }
+
+    .game-card {
+        width: 90%; max-width: 380px;
+        background: var(--cream); border-radius: 24px;
+        padding: 25px; text-align: center;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        position: relative; overflow: hidden;
+    }
+
+    .game-card.dark { background: #1a1a1a; border-color: #444; color: #eee; }
+    .game-card.dark .g-title { color: var(--gold); }
+    .game-card.dark .g-desc { color: #aaa; }
+
+    .g-title { font-family: 'Playfair Display'; font-size: 1.8rem; color: var(--burgundy); margin-bottom: 5px; }
+    .g-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+
+    /* --- 1. WIRE GAME (Circuit) --- */
+    .wire-area {
+        position: relative; display: flex; justify-content: space-between;
+        padding: 10px 20px; height: 220px; align-items: center;
+    }
+    .socket-col { display: flex; flex-direction: column; gap: 40px; z-index: 2; }
+    .socket {
+        width: 32px; height: 32px; border-radius: 50%;
+        border: 3px solid #fff; cursor: pointer;
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        transition: transform 0.2s;
+    }
+    .socket:active { transform: scale(1.2); }
+    
+    .bg-red { background: #ff4757; }
+    .bg-blue { background: #1e90ff; }
+    .bg-green { background: #2ed573; }
+
+    .wire-svg { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 1; }
+
+    /* --- 2. FUEL GAME (Cockpit) --- */
+    .fuel-dashboard {
+        background: #2f3640; border-radius: 15px;
+        padding: 0; position: relative; height: 260px;
+        border: 3px solid #353b48; overflow: visible; /* Allow dragging outside */
+        display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    
+    .pump-unit {
+        width: 80px; height: 160px; background: #c0392b; 
+        margin-left: 20px; border-radius: 10px 10px 0 0;
+        position: relative; border-right: 4px solid #96281b;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 2rem; box-shadow: 5px 0 10px rgba(0,0,0,0.3);
+        z-index: 2;
+    }
+    
+    .car-unit {
+        width: 120px; height: auto; margin-right: 10px; margin-bottom: 20px;
+        filter: grayscale(1) brightness(0.7); transition: 0.5s; z-index: 1;
+    }
+    .car-unit.filled { filter: grayscale(0) brightness(1); transform: scale(1.05); }
+
+    /* The Hanging Hose Canvas */
+    .hose-canvas {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 5;
+    }
+
+    .nozzle-handle {
+        font-size: 3rem; position: absolute; z-index: 20;
+        left: 45px; top: 100px; /* Initial on Pump */
+        cursor: grab; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+        transition: transform 0.1s;
+    }
+    .nozzle-handle:active { cursor: grabbing; transform: scale(1.1); }
+
+    .fuel-btn {
+        background: var(--gold); color: var(--burgundy); border: none;
+        width: 100%; padding: 15px; border-radius: 50px;
+        font-weight: 800; text-transform: uppercase; margin-top: 20px;
+        cursor: pointer; display: none; animation: pulse 1s infinite;
+        box-shadow: 0 5px 15px rgba(212,175,55,0.4);
+    }
+
+    /* --- 3. TRAFFIC --- */
+    .traffic-row {
+        background: #333; padding: 20px 0; border-radius: 10px;
+        display: flex; gap: 10px; overflow-x: auto;
+        border-top: 3px solid #f1c40f; border-bottom: 3px solid #f1c40f;
+    }
+    .traffic-car { font-size: 3.5rem; min-width: 70px; cursor: pointer; transition: 0.4s; }
+
+    /* --- 4. BLOCK --- */
+    .road-scene {
+        background: #7f8c8d; height: 160px; border-radius: 10px;
+        position: relative; overflow: hidden; border-bottom: 6px solid #2c3e50;
+    }
+    .stripe {
+        position: absolute; top: 50%; left: 0; width: 100%; height: 6px;
+        background: linear-gradient(90deg, #fff 60%, transparent 40%);
+        background-size: 60px 100%; opacity: 0.6;
+    }
+    .rock { position: absolute; font-size: 3rem; cursor: pointer; transition: 0.1s; z-index: 5; filter: drop-shadow(0 5px 0 rgba(0,0,0,0.3)); }
+
+    /* --- 5. NETWORK --- */
+    .net-box { display: flex; justify-content: center; gap: 15px; align-items: flex-end; height: 100px; margin-bottom: 10px; }
+    .net-stick { width: 18px; background: #555; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+    .net-stick.lit { background: #2ed573; box-shadow: 0 0 15px #2ed573; }
+
+    /* --- 6. RAIN --- */
+    .wiper-window {
+        width: 100%; height: 180px; background: url('https://img.freepik.com/free-photo/rain-glass-texture-overlay_53876-104332.jpg') center/cover;
+        border-radius: 10px; position: relative; overflow: hidden; border: 3px solid #333;
+    }
+    .fog-overlay {
+        position: absolute; inset: 0; background: rgba(255,255,255,0.85);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: bold; color: #555; transition: opacity 0.1s;
+    }
+
+    /* --- WIN SCREEN --- */
+    .win-modal {
+        position: fixed; inset: 0; background: #fff0f3; z-index: 500;
+        display: none; flex-direction: column; justify-content: center; align-items: center;
+        opacity: 0; transition: opacity 0.8s;
+    }
+    .win-modal.active { opacity: 1; }
+    
+    .hug-stage { position: relative; width: 320px; height: 320px; margin-bottom: 20px; }
+    .final-av { position: absolute; width: 170px; top: 50%; transition: 1.2s cubic-bezier(0.22, 1, 0.36, 1); filter: drop-shadow(0 20px 30px rgba(0,0,0,0.15)); }
+    
+    .left-av { left: -150px; transform: translateY(-50%); }
+    .right-av { right: -150px; transform: translateY(-50%) scaleX(-1); }
+    
+    .hugging .left-av { left: 65px; transform: translateY(-50%) rotate(-8deg); }
+    .hugging .right-av { right: 65px; transform: translateY(-50%) scaleX(-1) rotate(-8deg); }
+
+    .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+    .action-btn {
+        background: white; color: var(--burgundy); border: 2px solid var(--burgundy);
+        padding: 12px 30px; border-radius: 50px; font-weight: 800; text-decoration: none; font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .action-btn:active { transform: scale(0.95); }
+    .primary { background: var(--burgundy); color: var(--gold); border-color: var(--burgundy); box-shadow: 0 5px 15px rgba(99,13,22,0.3); }
+
+    @keyframes pulse { 0%{transform: scale(1);} 50%{transform: scale(1.03);} }
+    /* Falling hearts */
+.falling-heart{
+    position: fixed;
+    top: -20px;
+    color: #D4AF37;
+    pointer-events: none;
+    z-index: 9999;
+    animation: fall linear forwards;
+}
+
+@keyframes fall{
+    to{
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+
+</style>
+</head>
+<body>
+    <script src="effects.js"></script>
+
+    <div class="clouds">
+        <div class="cloud" style="top:15%; left:5%;">☁️</div>
+        <div class="cloud" style="top:45%; left:75%;">☁️</div>
+        <div class="cloud" style="top:75%; left:20%;">☁️</div>
+    </div>
+
+    <header class="header">
+        <h1 class="title">Coming Home ❤️</h1>
+        <div class="subtitle" id="statusText">Hold Button to Drive</div>
+    </header>
+
+    <div id="viewport">
+        <div id="world">
+            <div class="map-container">
+                <svg viewBox="0 0 300 4200">
+                    <path id="roadPath" class="path-grass" d="M 150 50 Q 50 300, 150 600 T 250 1200 T 50 1800 T 150 2400 T 250 3000 T 50 3600 L 150 4100" />
+                    <path class="path-border" d="M 150 50 Q 50 300, 150 600 T 250 1200 T 50 1800 T 150 2400 T 250 3000 T 50 3600 L 150 4100" />
+                    <path class="path-road" d="M 150 50 Q 50 300, 150 600 T 250 1200 T 50 1800 T 150 2400 T 250 3000 T 50 3600 L 150 4100" />
+                    <path class="path-line" d="M 150 50 Q 50 300, 150 600 T 250 1200 T 50 1800 T 150 2400 T 250 3000 T 50 3600 L 150 4100" />
+
+                    <g id="c0" transform="translate(150, 50)" class="city-group"><circle class="city-dot"/><text x="20" y="5" class="city-label">KOTTAYAM</text></g>
+                    <g id="c1" transform="translate(150, 600)" class="city-group"><circle class="city-dot"/><text x="-120" y="5" class="city-label">CHANGANASSERY</text></g>
+                    <g id="c2" transform="translate(250, 1200)" class="city-group"><circle class="city-dot"/><text x="20" y="5" class="city-label">THIRUVALLA</text></g>
+                    <g id="c3" transform="translate(50, 1800)" class="city-group"><circle class="city-dot"/><text x="-110" y="5" class="city-label">CHENGANNUR</text></g>
+                    <g id="c4" transform="translate(150, 2400)" class="city-group"><circle class="city-dot"/><text x="20" y="5" class="city-label">MAVELIKARA</text></g>
+                    <g id="c5" transform="translate(250, 3000)" class="city-group"><circle class="city-dot"/><text x="-110" y="5" class="city-label" text-anchor="end">KAYAMKULAM</text></g>
+                    <g id="c6" transform="translate(50, 3600)" class="city-group"><circle class="city-dot"/><text x="20" y="5" class="city-label">KOLLAM</text></g>
+                    <g id="c7" transform="translate(150, 4100)" class="city-group"><circle class="city-dot" style="fill:var(--gold);"/><text x="-110" y="5" class="city-label">TRIVANDRUM</text></g>
+                </svg>
+
+                <div id="him" class="avatar-wrapper">
+                    <img src="assets/him.png" class="avatar-img">
+                    <div class="car-icon">🚗</div>
+                </div>
+                <div id="you" class="avatar-wrapper"><img src="assets/you.png" class="avatar-img"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="btn-container"><button id="driveBtn" class="drive-btn"><span>🚘</span> Hold to Drive</button></div>
+    </div>
+
+    <div id="game-traffic" class="overlay">
+        <div class="game-card">
+            <div class="g-header"><h2>Traffic Jam!</h2><p>Tap cars to clear the lane.</p></div>
+            <div class="traffic-row">
+                <div class="traffic-car">🚕</div><div class="traffic-car">🚙</div><div class="traffic-car">🚌</div><div class="traffic-car">🚓</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-signal" class="overlay">
+        <div class="game-card dark">
+            <div class="g-header"><h2>Broken Signal!</h2><p>Match the colored wires.</p></div>
+            <div class="wire-area" id="wireGameArea">
+                <svg class="wire-svg" id="wireSvg"></svg>
+                <div class="socket-col" id="leftCol">
+                    <div class="socket bg-red" data-color="red"></div>
+                    <div class="socket bg-blue" data-color="blue"></div>
+                    <div class="socket bg-green" data-color="green"></div>
+                </div>
+                <div class="socket-col" id="rightCol">
+                    <div class="socket bg-green" data-color="green"></div>
+                    <div class="socket bg-red" data-color="red"></div>
+                    <div class="socket bg-blue" data-color="blue"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-fuel" class="overlay">
+        <div class="game-card dark">
+            <div class="g-header"><h2>Low Fuel</h2><p>Drag nozzle to car tank & hold.</p></div>
+            <div class="fuel-dashboard">
+                <div class="pump-unit">⛽</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" class="car-unit" id="fuelCar">
+                <svg class="hose-canvas"><path id="hoseLine" fill="none" stroke="#111" stroke-width="8" stroke-linecap="round"/></svg>
+                <div class="nozzle-handle" id="nozzle">🔫</div>
+            </div>
+            <button id="fillBtn" class="fuel-btn">HOLD TO FILL</button>
+        </div>
+    </div>
+
+    <div id="game-block" class="overlay">
+        <div class="game-card">
+            <div class="g-header"><h2>Road Block</h2><p>Tap stones to clear.</p></div>
+            <div class="road-scene" id="blockField"><div class="stripe"></div></div>
+        </div>
+    </div>
+
+    <div id="game-rain" class="overlay">
+        <div class="game-card">
+            <div class="g-header"><h2>Heavy Rain</h2><p>Swipe to wipe windshield.</p></div>
+            <div class="wiper-window" id="rainWindow"><div class="fog-overlay" id="fogLayer">💨 SWIPE 💨</div></div>
+        </div>
+    </div>
+
+    <div id="game-net" class="overlay">
+        <div class="game-card dark">
+            <div class="g-header"><h2>No Signal</h2><p>Tap bars to restore network.</p></div>
+            <div class="net-box">
+                <div class="net-stick" style="height:25%" onclick="netClick(1)"></div>
+                <div class="net-stick" style="height:50%" onclick="netClick(2)"></div>
+                <div class="net-stick" style="height:75%" onclick="netClick(3)"></div>
+                <div class="net-stick" style="height:100%" onclick="netClick(4)"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="winScreen" class="win-modal">
+        <h1 class="title" style="font-size:2.2rem; margin-bottom:10px;">Happy Hug Day! ❤️</h1>
+        <p style="color:#666; font-size:1.1rem; margin-bottom:30px; font-weight:bold;">Distance Closed. Forever Yours.</p>
+        <div class="hug-stage">
+            <img src="assets/him.png" class="final-av left-av">
+            <img src="assets/you.png" class="final-av right-av">
+        </div>
+        <div class="btn-group">
+            <button class="action-btn" onclick="location.reload()">Replay</button>
+            <a href="calendar.html" class="action-btn primary">Back to Rewards</a>
+        </div>
+    </div>
+
+<script>
+    // --- STATE ---
+    const checkpoints = [
+        { y: 600, type: 'traffic', id:'c1', triggered:false },
+        { y: 1200, type: 'signal', id:'c2', triggered:false },
+        { y: 1800, type: 'fuel', id:'c3', triggered:false },
+        { y: 2400, type: 'block', id:'c4', triggered:false },
+        { y: 3000, type: 'rain', id:'c5', triggered:false },
+        { y: 3600, type: 'net', id:'c6', triggered:false }
+    ];
+
+    const world = document.getElementById('world');
+    const path = document.getElementById('roadPath');
+    const him = document.getElementById('him');
+    const btn = document.getElementById('driveBtn');
+    const status = document.getElementById('statusText');
+    const pathLen = path.getTotalLength();
+
+    let progress = 0;
+    let isDriving = false;
+    let isPaused = false;
+    let animId;
+
+    // --- ENGINE ---
+    function updateCamera(y) {
+        const h = window.innerHeight;
+        const tY = (h/2) - y;
+        world.style.transform = `translateY(${tY}px)`;
+    }
+
+    function loop() {
+        if(isDriving && !isPaused && progress < 100) {
+            progress += 0.2; 
+            const pt = path.getPointAtLength(pathLen * (progress/100));
+            
+            him.style.left = pt.x + 'px';
+            him.style.top = pt.y + 'px';
+            updateCamera(pt.y);
+
+            checkpoints.forEach(cp => {
+                if(!cp.triggered && pt.y >= cp.y) {
+                    trigger(cp);
+                }
+            });
+
+            if(progress >= 99) { doWin(); return; }
+            animId = requestAnimationFrame(loop);
+        }
+    }
+
+    function trigger(cp) {
+        isPaused = true;
+        isDriving = false;
+        cp.triggered = true;
+        btn.style.opacity = '0.3';
+        btn.style.pointerEvents = 'none';
+        document.getElementById(cp.id).classList.add('reached');
+
+        const modal = document.getElementById(`game-${cp.type}`);
+        modal.style.display = 'flex';
+        setTimeout(()=>modal.classList.add('active'), 10);
+
+        if(cp.type === 'traffic') setupTraffic();
+        if(cp.type === 'signal') setupWireGame();
+        if(cp.type === 'fuel') setupFuel();
+        if(cp.type === 'block') setupBlock();
+        if(cp.type === 'rain') setupRain();
+        if(cp.type === 'net') setupNet();
+    }
+
+    function resume(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('active');
+        setTimeout(()=>modal.style.display='none', 300);
+        isPaused = false;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        status.innerText = "Obstacle Cleared! Keep Going!";
+        setTimeout(()=>status.innerText="Hold Button to Travel", 2000);
+    }
+
+    // --- 1. TRAFFIC ---
+    function setupTraffic() {
+        const cars = document.querySelectorAll('.traffic-car');
+        let count = 0;
+        cars.forEach(c => {
+            c.style.transform = 'scale(1) translateX(0)';
+            c.style.opacity = '1';
+            c.onclick = function() {
+                this.style.transform = 'translateX(200px) scale(0.8)';
+                this.style.opacity = '0.5';
+                count++;
+                if(count>=4) setTimeout(()=>resume('game-traffic'), 500);
+            }
+        });
+    }
+
+    // --- 2. SIGNAL (3-Wire Match) ---
+    function setupWireGame() {
+        const svg = document.getElementById('wireSvg');
+        const leftSockets = document.querySelectorAll('#leftCol .socket');
+        const rightSockets = document.querySelectorAll('#rightCol .socket');
+        const container = document.querySelector('.wire-area');
+        
+        while(svg.firstChild) svg.removeChild(svg.firstChild);
+        
+        let activeLine = null;
+        let activeColor = null;
+        let connections = 0;
+
+        leftSockets.forEach(start => {
+            start.onmousedown = start.ontouchstart = (e) => {
+                e.preventDefault();
+                const t = e.touches ? e.touches[0] : e;
+                activeColor = start.dataset.color;
+                
+                const box = container.getBoundingClientRect();
+                const sRect = start.getBoundingClientRect();
+                
+                const x1 = sRect.left + sRect.width/2 - box.left;
+                const y1 = sRect.top + sRect.height/2 - box.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x1); line.setAttribute('y2', y1);
+                line.setAttribute('stroke', activeColor === 'red' ? '#ff4757' : activeColor==='blue'?'#1e90ff':'#2ed573');
+                line.setAttribute('stroke-width', '6');
+                line.setAttribute('stroke-linecap', 'round');
+                
+                svg.appendChild(line);
+                activeLine = line;
+
+                const move = (ev) => {
+                    const tv = ev.touches ? ev.touches[0] : ev;
+                    const x2 = tv.clientX - box.left;
+                    const y2 = tv.clientY - box.top;
+                    activeLine.setAttribute('x2', x2);
+                    activeLine.setAttribute('y2', y2);
+                };
+
+                const end = (ev) => {
+                    const tv = ev.changedTouches ? ev.changedTouches[0] : ev;
+                    let hit = false;
+                    rightSockets.forEach(target => {
+                        const tRect = target.getBoundingClientRect();
+                        if(tv.clientX >= tRect.left && tv.clientX <= tRect.right && 
+                           tv.clientY >= tRect.top && tv.clientY <= tRect.bottom) {
+                            if(target.dataset.color === activeColor) {
+                                hit = true;
+                                const x2 = tRect.left + tRect.width/2 - box.left;
+                                const y2 = tRect.top + tRect.height/2 - box.top;
+                                activeLine.setAttribute('x2', x2); activeLine.setAttribute('y2', y2);
+                                connections++;
+                                if(connections === 3) setTimeout(()=>resume('game-signal'), 600);
+                            }
+                        }
+                    });
+                    if(!hit) svg.removeChild(activeLine);
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('touchmove', move);
+                };
+
+                document.addEventListener('mousemove', move);
+                document.addEventListener('touchmove', move);
+                document.addEventListener('mouseup', end);
+                document.addEventListener('touchend', end);
+            };
+        });
+    }
+
+    // --- 3. FUEL (Physics Hose) ---
+    function setupFuel() {
+        const nozzle = document.getElementById('nozzle');
+        const hose = document.getElementById('hoseLine');
+        const fillBtn = document.getElementById('fillBtn');
+        const car = document.getElementById('fuelCar');
+        const dash = document.querySelector('.fuel-dashboard');
+        
+        let connected = false, fuel = 0, timer;
+
+        // Start Positions relative to Dashboard
+        // Pump Hose Point: Left 100px, Bottom 100px (approx)
+        const pumpX = 80; const pumpY = 140; 
+        nozzle.style.left = '60px'; nozzle.style.top = '100px'; nozzle.style.transform = 'rotate(0deg)';
+        hose.setAttribute('d', `M ${pumpX} ${pumpY} Q 60 200 60 100`);
+        
+        fillBtn.style.display = 'none'; fillBtn.innerText = "HOLD TO FILL";
+        car.classList.remove('filled');
+
+        const start = (e) => { if(!connected) { e.preventDefault(); document.addEventListener('mousemove', move); document.addEventListener('touchmove', move); document.addEventListener('mouseup', end); document.addEventListener('touchend', end); }};
+        
+        const move = (e) => {
+            const t = e.touches ? e.touches[0] : e;
+            const rect = dash.getBoundingClientRect();
+            // Bound inside
+            let x = t.clientX - rect.left - 20; 
+            let y = t.clientY - rect.top - 20;
+            
+            nozzle.style.left = x + 'px'; nozzle.style.top = y + 'px';
+            
+            // Quadratic Bezier for hanging rope effect
+            // Control point pulls down
+            hose.setAttribute('d', `M ${pumpX} ${pumpY} Q ${x} 200 ${x+20} ${y+20}`);
+
+            // Hit Car (Right Side)
+            if(x > rect.width - 120 && y > rect.height - 100) {
+                connected = true; end();
+                nozzle.style.left = (rect.width - 100) + 'px';
+                nozzle.style.top = (rect.height - 80) + 'px';
+                nozzle.style.transform = 'rotate(-45deg)';
+                hose.setAttribute('d', `M ${pumpX} ${pumpY} Q ${rect.width-100} 200 ${rect.width-80} ${rect.height-60}`);
+                fillBtn.style.display = 'block';
+            }
+        };
+        const end = () => { document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move); };
+
+        fillBtn.onmousedown = fillBtn.ontouchstart = (e) => {
+            e.preventDefault(); fillBtn.style.transform = 'scale(0.95)';
+            timer = setInterval(() => {
+                fuel += 4; fillBtn.innerText = `FILLING ${fuel}%`;
+                if(fuel >= 100) {
+                    clearInterval(timer); car.classList.add('filled'); fillBtn.innerText = "FULL!";
+                    setTimeout(()=>resume('game-fuel'), 800);
+                }
+            }, 40);
+        };
+        fillBtn.onmouseup = fillBtn.ontouchend = () => { clearInterval(timer); fillBtn.style.transform='scale(1)'; };
+
+        nozzle.addEventListener('mousedown', start);
+        nozzle.addEventListener('touchstart', start);
+    }
+
+    // --- 4. BLOCK ---
+    function setupBlock() {
+        const field = document.getElementById('blockField');
+        field.innerHTML = '<div class="stripe"></div>';
+        let count = 0;
+        for(let i=0; i<5; i++) {
+            let r = document.createElement('div');
+            r.className = 'boulder'; r.innerText = '🪨';
+            r.style.left = (i*18 + 5) + '%'; r.style.top = '60px';
+            r.onclick = function() {
+                this.style.transform = 'scale(0) rotate(45deg)'; this.style.opacity = '0';
+                count++; if(count>=5) setTimeout(()=>resume('game-block'), 500);
+            }
+            field.appendChild(r);
+        }
+    }
+
+    // --- 5. RAIN ---
+    function setupRain() {
+        const layer = document.getElementById('fogLayer');
+        let swipe = 0;
+        const handler = () => {
+            swipe++; layer.style.opacity = 1 - (swipe/50);
+            if(swipe>=50) {
+                document.getElementById('rainWindow').removeEventListener('touchmove', handler);
+                setTimeout(()=>resume('game-rain'), 500);
+            }
+        };
+        document.getElementById('rainWindow').addEventListener('mousemove', handler);
+        document.getElementById('rainWindow').addEventListener('touchmove', handler);
+    }
+
+    // --- 6. NETWORK ---
+    let netLvl = 0;
+    window.netClick = function(n) {
+        if(n === netLvl + 1) {
+            document.querySelectorAll('.net-stick')[n-1].classList.add('lit');
+            netLvl = n; if(netLvl===4) setTimeout(()=>resume('game-net'), 500);
+        }
+    }
+    function setupNet() {
+        netLvl=0; document.querySelectorAll('.net-stick').forEach(s=>s.classList.remove('lit'));
+    }
+
+    // --- WIN ---
+    function doWin() {
+        const modal = document.getElementById('winScreen');
+        modal.style.display = 'flex';
+        setTimeout(()=>modal.classList.add('active'), 10);
+        setTimeout(()=>document.querySelector('.hug-stage').classList.add('hugging'), 200);
+    }
+
+    // --- DRIVING ---
+    function startD(e) { if(e.cancelable) e.preventDefault(); if(!isPaused) { isDriving=true; btn.style.transform='scale(0.96)'; loop(); } }
+    function stopD() { isDriving=false; btn.style.transform='scale(1)'; cancelAnimationFrame(animId); }
+
+    btn.addEventListener('mousedown', startD);
+    btn.addEventListener('touchstart', startD);
+    btn.addEventListener('mouseup', stopD);
+    btn.addEventListener('touchend', stopD);
+
+    updateCamera(50); // Init
+
+</script>
+</body>
+</html>
