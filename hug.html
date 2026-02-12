@@ -318,7 +318,11 @@
     
     /* Initial Positions (Off-screen) */
     .left-av { left: -150px; transform: translateY(-50%); }
-    .right-av { right: -150px; transform: translateY(-50%) scaleX(-1); }
+    .right-av { 
+    right: -150px; 
+    transform: translateY(-50%);
+}
+
     
     /* Final Positions (Meeting in Center with slight overlap) */
     /* Container is 320px. Center is 160px. Avatar width 160px. */
@@ -328,14 +332,15 @@
         transform: translateY(-50%) rotate(-5deg); 
         animation: cuddle 2s infinite alternate ease-in-out;
     }
-    .hugging .right-av { 
-        right: 50px; 
-        transform: translateY(-50%) scaleX(-1) rotate(-5deg); 
-        animation: cuddleMirror 2s infinite alternate ease-in-out;
-    }
+.hugging .right-av { 
+    right: 50px; 
+    transform: translateY(-50%) rotate(5deg);
+    animation: cuddle 2s infinite alternate ease-in-out;
+}
+
 
     @keyframes cuddle { from{transform: translateY(-50%) rotate(-5deg);} to{transform: translateY(-55%) rotate(0deg);} }
-    @keyframes cuddleMirror { from{transform: translateY(-50%) scaleX(-1) rotate(-5deg);} to{transform: translateY(-55%) scaleX(-1) rotate(0deg);} }
+    
 
     .btn-group { display: flex; gap: 15px; margin-top: 30px; }
     .action-btn {
