@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Kiss Day | The Royal Connection</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --burgundy: #630D16;
+            --accent-red: #8B0000;
+            --cream-beige: #FAF9F6;
+            --onyx: #1A1A1A;
+            --gold: #D4AF37;
+        }
+
+        /* Global Setup */
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            cursor: none !important; 
+        }
+
+        body, html {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: var(--onyx);
+            font-family: 'Poppins', sans-serif;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, var(--burgundy) 0%, var(--onyx) 100%);
+            transition: background 2s ease;
+        }
+
+        /* Ambient Glow overlay */
+        .ambient-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--gold) 0%, transparent 75%);
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Gold Heart Cursor */
+        #heart-cursor {
+            position: fixed;
+            width: 24px; height: 24px;
+            background: var(--gold);
+            clip-path: path('M12 4.419c-2.826-5.695-11.999-4.064-11.999 3.27 0 7.27 9.903 10.938 11.999 15.311 2.096-4.373 12-8.041 12-15.311 0-7.327-9.17-8.972-12-3.27z');
+            pointer-events: none; 
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 10px var(--gold));
+        }
+
+        /* Navigation */
+        .nav-premium {
+            position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+            padding: 0 40px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(26, 26, 26, 0.1); backdrop-filter: blur(10px);
+            z-index: 2000; border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display';
+            font-weight: 700; color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        /* UI Headers */
+        .game-header {
+            position: absolute; top: 120px; width: 100%;
+            text-align: center; z-index: 10;
+        }
+
+        .game-header h1 {
+            font-family: 'Playfair Display';
+            font-style: italic; color: var(--gold);
+            font-size: 2.2rem; transition: color 1s ease;
+        }
+
+        .meter-container {
+            width: 200px; height: 3px; background: rgba(255,255,255,0.1);
+            margin: 15px auto; border-radius: 10px; overflow: hidden;
+        }
+        #meter-fill {
+            width: 0%; height: 100%; background: var(--gold);
+            box-shadow: 0 0 10px var(--gold); transition: width 0.2s;
+        }
+
+        /* Characters & Entry Animations */
+        @keyframes slideInLeft {
+            from { transform: translateX(-150%) rotate(-10deg); opacity: 0; }
+            to { transform: translateX(0) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(150%) rotate(10deg); opacity: 0; }
+            to { transform: translateX(0) rotate(0deg); opacity: 1; }
+        }
+
+        .char-container {
+            position: absolute; width: 110px; z-index: 10;
+            pointer-events: none;
+        }
+
+        #girl { 
+            left: 12%; bottom: 20%; 
+            animation: slideInLeft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        #boy { 
+            right: 12%; bottom: 20%; 
+            animation: slideInRight 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .char-img {
+            width: 100%;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+        }
+
+        /* Drawing Canvas */
+        #canvas { position: absolute; inset: 0; z-index: 5; }
+
+        /* Final Kiss Pulse */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+        .kissing {
+            animation: heartbeat 0.6s infinite alternate ease-in-out !important;
+        }
+
+        /* Win Overlay */
+        .win-overlay {
+            position: fixed; inset: 0; background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(15px); display: none;
+            justify-content: center; align-items: center; z-index: 5000;
+        }
+
+        .win-box {
+            background: var(--cream-beige);
+            padding: 50px; border: 1px solid var(--gold);
+            text-align: center; max-width: 420px;
+        }
+
+        .btn-restart {
+            margin-top: 25px;
+            background: var(--burgundy); color: var(--gold);
+            padding: 14px 35px; border: 1px solid var(--gold);
+            font-size: 0.7rem; letter-spacing: 3px;
+            text-transform: uppercase; cursor: none;
+            font-weight: 600;
+        }
+
+        .sparkle {
+            position: fixed; pointer-events: none; color: var(--gold);
+            z-index: 100; font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="heart-cursor"></div>
+
+<div id="game-container">
+    <div class="ambient-glow" id="glow"></div>
+
+    <nav class="nav-premium">
+        <div class="nav-logo">KISS DAY SPECIAL</div>
+        <div style="font-size: 0.6rem; color: var(--gold); letter-spacing: 2px;">EDITION 2026</div>
+    </nav>
+
+    <div class="game-header">
+        <h1 id="status-text">Draw the Path to Us</h1>
+        <div class="meter-container"><div id="meter-fill"></div></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="girl" class="char-container"><img src="assets/yo1.png" class="char-img"></div>
+    <div id="boy" class="char-container"><img src="assets/h1.png" class="char-img"></div>
+
+    <div class="win-overlay" id="win">
+        <div class="win-box">
+            <h2 style="font-family: 'Playfair Display'; color: var(--burgundy); font-size: 2rem; font-style: italic;">A Beautiful Connection</h2>
+            <p style="margin-top: 15px; font-weight: 300; letter-spacing: 1px;">Every line led me back to you.</p>
+            <p style="margin-top: 5px; color: var(--burgundy); font-weight: 600;">Happy Kiss Day 💋</p>
+            <button class="btn-restart" onclick="location.reload()">Replay Experience</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const cursor = document.getElementById('heart-cursor');
+    const meter = document.getElementById('meter-fill');
+    const statusText = document.getElementById('status-text');
+    const glow = document.getElementById('glow');
+    const container = document.getElementById('game-container');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Custom Cursor tracking
+    window.addEventListener('mousemove', e => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+
+    let path = [];
+    let drawing = false;
+
+    function drawPath() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "rgba(212, 175, 55, 0.7)";
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#D4AF37"; 
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        ctx.beginPath();
+        path.forEach((p, i) => {
+            if(i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+    }
+
+    canvas.addEventListener('pointerdown', e => {
+        drawing = true;
+        path = [{x: e.clientX, y: e.clientY}];
+        // Clear previous drawing if user tries again before animation
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+    });
+
+    canvas.addEventListener('pointermove', e => {
+        if (!drawing) return;
+        path.push({x: e.clientX, y: e.clientY});
+        
+        // Progress Feedback
+        const progress = Math.min((path.length / 180) * 100, 100);
+        meter.style.width = progress + "%";
+        
+        drawPath();
+    });
+
+    canvas.addEventListener('pointerup', () => {
+        if (path.length > 40) {
+            drawing = false;
+            startConnectionAnimation();
+        }
+    });
+
+    function startConnectionAnimation() {
+        const girl = document.getElementById('girl');
+        const boy = document.getElementById('boy');
+        
+        // Remove initial entry animations to take full control of movement
+        girl.style.animation = "none";
+        boy.style.animation = "none";
+
+        let i = 0;
+        const total = path.length;
+
+        const interval = setInterval(() => {
+            if (i >= total) {
+                clearInterval(interval);
+                triggerKiss(girl, boy);
+                return;
+            }
+
+            const point = path[i];
+            const progress = i / total;
+
+            // Environmental Change
+            glow.style.opacity = progress;
+            if (progress > 0.75) {
+                container.style.background = "radial-gradient(circle at center, var(--cream-beige) 0%, #fff0f5 100%)";
+                statusText.style.color = "var(--burgundy)";
+                statusText.innerText = "Almost There...";
+            }
+
+            // Move Characters with slight offsets so they don't sit on top of each other
+            girl.style.left = (point.x - 100) + "px";
+            girl.style.top = (point.y - 60) + "px";
+            
+            boy.style.left = (point.x + 0) + "px";
+            boy.style.top = (point.y - 60) + "px";
+
+            // Sparkle logic
+            if (i % 5 === 0) spawnSparkle(point.x, point.y);
+
+            i += 2;
+        }, 16);
+    }
+
+    function spawnSparkle(x, y) {
+        const s = document.createElement('div');
+        s.className = 'sparkle';
+        s.innerHTML = '✦';
+        s.style.left = x + 'px';
+        s.style.top = y + 'px';
+        document.body.appendChild(s);
+
+        s.animate([
+            { transform: 'scale(1) translateY(0)', opacity: 1 },
+            { transform: 'scale(0) translateY(-40px) rotate(90deg)', opacity: 0 }
+        ], { duration: 1000 });
+
+        setTimeout(() => s.remove(), 1000);
+    }
+
+    function triggerKiss(g, b) {
+        // Apply final state
+        g.classList.add('kissing');
+        b.classList.add('kissing');
+        statusText.innerText = "Happy Kiss Day! 💋";
+        
+        // Final Gold Explosion
+        for(let k=0; k<50; k++) {
+            setTimeout(() => {
+                spawnSparkle(
+                    (window.innerWidth/2) + (Math.random()-0.5)*300, 
+                    (window.innerHeight/2) + (Math.random()-0.5)*300
+                );
+            }, k * 25);
+        }
+
+        // Haptic Feedback (Mobile)
+        if (navigator.vibrate) navigator.vibrate([150, 100, 150]);
+
+        setTimeout(() => {
+            document.getElementById('win').style.display = 'flex';
+        }, 2200);
+    }
+</script>
+
+</body>
+</html>

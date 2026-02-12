@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiss Day | Rhythm of Love</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --burgundy: #630D16;
+            --gold: #D4AF37;
+            --cream: #FAF9F6;
+            --dark: #1a0505;
+        }
+
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            user-select: none; -webkit-tap-highlight-color: transparent; 
+        }
+
+        body { 
+            background-color: var(--dark); 
+            font-family: 'Poppins', sans-serif; 
+            overflow: hidden; 
+            height: 100vh;
+            touch-action: none;
+        }
+
+        /* ================= NAVIGATION ================= */
+        .nav-premium {
+            position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+            padding: 0 40px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(26, 5, 5, 0.8); backdrop-filter: blur(15px);
+            z-index: 2000; border-bottom: 1.5px solid var(--burgundy);
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display'; font-weight: 700;
+            font-size: 1.2rem; color: var(--gold); letter-spacing: 2px;
+        }
+
+        /* ================= GAME STAGE ================= */
+        #game-stage {
+            position: relative; width: 100%; height: 100vh;
+            background: radial-gradient(circle at center, var(--burgundy) 0%, var(--dark) 100%);
+            display: flex; justify-content: center;
+            transition: background 1s ease;
+        }
+
+        .lane-container {
+            display: flex; width: 340px; height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 1px solid rgba(212, 175, 55, 0.2);
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        .lane { flex: 1; position: relative; border-right: 1px solid rgba(212, 175, 55, 0.05); }
+
+        .hit-zone {
+            position: absolute; bottom: 100px; width: 100%; height: 70px;
+            border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
+            background: rgba(212, 175, 55, 0.15); z-index: 10; pointer-events: none;
+        }
+
+        /* ================= NOTES & CHARACTERS ================= */
+        .note {
+            position: absolute; width: 45px; height: 45px;
+            left: 50%; transform: translateX(-50%);
+            border: 2px solid var(--gold); border-radius: 50%;
+            box-shadow: 0 0 15px var(--gold);
+            background: radial-gradient(circle, var(--gold), transparent);
+        }
+
+        .char {
+            position: absolute; bottom: 180px; width: 110px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+        #girl { left: 5%; }
+        #boy { right: 5%; }
+
+        /* ================= KISS EFFECTS ================= */
+        #kiss-emoji {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 120px; z-index: 100; opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+            filter: drop-shadow(0 0 30px #ff4d88);
+        }
+
+        .heart-particle {
+            position: absolute; pointer-events: none; z-index: 90;
+            animation: heartFloat 2s ease-out forwards;
+        }
+
+        @keyframes heartFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-200px) scale(0); opacity: 0; }
+        }
+
+        /* ================= HUD ================= */
+        .hud {
+            position: absolute; top: 100px; width: 100%;
+            text-align: center; z-index: 100;
+        }
+        #progress-val { font-family: 'Playfair Display'; font-size: 2.5rem; color: var(--cream); }
+
+        /* ================= WIN SCREEN ================= */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(26, 5, 5, 0.95);
+            backdrop-filter: blur(15px); display: none;
+            justify-content: center; align-items: center; z-index: 5000;
+        }
+
+        .modal-box {
+            background: var(--cream); padding: 50px; border: 1px solid var(--gold);
+            text-align: center; width: 90%; max-width: 450px;
+        }
+
+        .btn-premium {
+            display: block; width: 100%; background: var(--burgundy);
+            color: var(--gold); padding: 15px; border: 1px solid var(--gold);
+            font-family: 'Poppins'; font-weight: 600; font-size: 0.8rem;
+            letter-spacing: 3px; text-transform: uppercase; margin-top: 15px;
+            cursor: pointer; text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-premium">
+        <div class="nav-logo">KISS DAY SPECIAL</div>
+        <div style="font-size: 0.65rem; letter-spacing: 2px; color: var(--gold);">RHYTHM OF LOVE</div>
+    </nav>
+
+    <div class="hud">
+        <div id="progress-val">0%</div>
+    </div>
+
+    <div id="game-stage">
+        <div id="kiss-emoji">💋</div>
+
+        <div class="lane-container" id="lane-wrap">
+            <div class="lane" id="lane-0"></div>
+            <div class="lane" id="lane-1"></div>
+            <div class="lane" id="lane-2"></div>
+            <div class="lane" id="lane-3"></div>
+            <div class="hit-zone"></div>
+        </div>
+
+        <img src="assets/yo1.png" id="girl" class="char">
+        <img src="assets/h1.png" id="boy" class="char">
+    </div>
+
+    <div class="modal-overlay" id="win-screen">
+        <div class="modal-box">
+            <h2 style="font-family:'Playfair Display'; font-size: 2rem; color: var(--burgundy);">A Perfect Match!</h2>
+            <p style="color: #666; margin-bottom: 20px;">Your hearts are perfectly in sync.</p>
+            
+            <button class="btn-premium" onclick="location.reload()">Replay</button>
+            <a href="rewards.html" class="btn-premium">Back to Rewards</a>
+        </div>
+    </div>
+
+<script>
+    const girl = document.getElementById('girl');
+    const boy = document.getElementById('boy');
+    const progressVal = document.getElementById('progress-val');
+    const winScreen = document.getElementById('win-screen');
+    const kissEmoji = document.getElementById('kiss-emoji');
+    const stage = document.getElementById('game-stage');
+    const lanes = [
+        document.getElementById('lane-0'), document.getElementById('lane-1'),
+        document.getElementById('lane-2'), document.getElementById('lane-3')
+    ];
+
+    let score = 0;
+    let gameRunning = true;
+    let girlPos = 5; 
+    let boyPos = 5;
+
+    function createNote() {
+        if (!gameRunning) return;
+        const laneIdx = Math.floor(Math.random() * 4);
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.style.top = '-50px';
+        lanes[laneIdx].appendChild(note);
+
+        let top = -50;
+        const move = setInterval(() => {
+            if (!gameRunning) { clearInterval(move); note.remove(); return; }
+            top += 6;
+            note.style.top = top + 'px';
+            if (top > window.innerHeight) { clearInterval(move); note.remove(); }
+        }, 16);
+        note.dataset.moveId = move;
+    }
+
+    function handleInput(index) {
+        const lane = lanes[index];
+        const notes = lane.querySelectorAll('.note');
+        notes.forEach(note => {
+            const top = parseInt(note.style.top);
+            const hitZoneTop = window.innerHeight - 170;
+            const hitZoneBottom = window.innerHeight - 100;
+
+            if (top >= hitZoneTop && top <= hitZoneBottom) {
+                clearInterval(note.dataset.moveId);
+                note.remove();
+                triggerSuccess();
+            }
+        });
+    }
+
+    function triggerSuccess() {
+        score = Math.min(score + 4, 100);
+        progressVal.innerText = score + "%";
+
+        girlPos += 1.5;
+        boyPos += 1.5;
+        girl.style.left = girlPos + "%";
+        boy.style.right = boyPos + "%";
+
+        const girlRect = girl.getBoundingClientRect();
+        const boyRect = boy.getBoundingClientRect();
+        if (girlRect.right >= boyRect.left) victory();
+    }
+
+    function victory() {
+        gameRunning = false;
+        
+        // Character Collision Final State
+        girl.style.left = "42%";
+        boy.style.right = "42%";
+        
+        // Trigger Kiss Visuals
+        setTimeout(() => {
+            kissEmoji.style.opacity = "1";
+            kissEmoji.style.transform = "translate(-50%, -50%) scale(1.5)";
+            stage.style.background = "radial-gradient(circle, #ff4d88, var(--burgundy))";
+            
+            // Spawn heart explosion
+            for(let i=0; i<30; i++) {
+                spawnHeart();
+            }
+        }, 400);
+
+        setTimeout(() => {
+            winScreen.style.display = 'flex';
+        }, 2500);
+    }
+
+    function spawnHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart-particle';
+        heart.innerHTML = ['❤️', '💖', '💝'][Math.floor(Math.random()*3)];
+        heart.style.left = (50 + (Math.random()-0.5)*40) + "%";
+        heart.style.top = (50 + (Math.random()-0.5)*40) + "%";
+        heart.style.fontSize = (Math.random()*20 + 20) + "px";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 2000);
+    }
+
+    // Input Logic
+    window.addEventListener('touchstart', (e) => {
+        const x = e.touches[0].clientX;
+        const laneWidth = document.getElementById('lane-wrap').offsetWidth / 4;
+        const stageLeft = document.getElementById('lane-wrap').offsetLeft;
+        if (x >= stageLeft && x <= stageLeft + (laneWidth*4)) {
+            handleInput(Math.floor((x - stageLeft) / laneWidth));
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        const map = { 'a':0, 's':1, 'd':2, 'f':3 };
+        if (map[e.key.toLowerCase()] !== undefined) handleInput(map[e.key.toLowerCase()]);
+    });
+
+    setInterval(createNote, 750);
+</script>
+</body>
+</html>
