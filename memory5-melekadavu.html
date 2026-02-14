@@ -391,15 +391,12 @@
         }
 
         .word-container {
-            position: absolute;
-            top: 45%;
-            width: 100%;
-            display: none;
-            justify-content: center;
-            gap: 60px;
-            pointer-events: none;
-            z-index: 60;
-        }
+    position: absolute;
+    top: 55%;
+    left: 0;
+    width: 100%;
+}
+
 
         .word-target {
             border: 2px dashed #fbe4b0;
@@ -430,7 +427,7 @@
             font-size: 1.4rem;
             box-shadow: 0 15px 25px #392020;
             border: 2px solid #fcedb3;
-            transform: translate(-50%, 0);
+            transform: translate(-50%, -50%);
         }
 
         /* treasure */
@@ -481,6 +478,14 @@
     justify-content: center;
     align-items: center;
 }
+.word-container {
+    z-index: 120;
+}
+
+#drag-word {
+    z-index: 250;
+}
+
 
 
         .note-paper {
@@ -626,6 +631,22 @@
         height: 70px;
         font-size: 2rem;
     }
+    .word-container {
+    top: 58%;
+}
+
+#drag-word {
+    font-size: 1.1rem;
+    padding: 8px 18px;
+    top: 65%;
+}
+
+.word-target {
+    width: 130px;
+    height: 48px;
+    font-size: 1.1rem;
+}
+
 }
 
     </style>
