@@ -2,273 +2,306 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Memory 02: The Mystery</title>
     <style>
         /* =====================================================
-           1. THEME: MYSTERY & BOUNDARIES
+           1. CORE & AESTHETICS
            ===================================================== */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600&family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Cinzel:wght@400;700&display=swap');
 
         :root {
-            --bg-deep: #080808;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --text-main: #e0e0e0;
-            --accent-lock: #ff4d6d;
-            --accent-gold: #D4AF37;
+            --bg-dark: #050505;
+            --bg-gradient: radial-gradient(circle at 50% 30%, #1a1a2e 0%, #000000 100%);
+            --accent-glow: #00d4ff; /* Digital/Mystery Blue */
+            --accent-deny: #ff4d6d; /* Red for refusal */
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: 'Playfair Display', serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1.5s ease;
+            height: 100vh; width: 100vw; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            color: white;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
 
-        /* Background texture representing "Blur/Hidden" */
-        .fog-layer {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(20,20,20,0), #000);
-            backdrop-filter: blur(10px);
-            z-index: -1;
+        /* Ambient Particles */
+        .particle {
+            position: absolute; width: 2px; height: 2px; background: white;
+            border-radius: 50%; opacity: 0; animation: float 10s infinite;
         }
-        
-        .floating-blur {
-            position: absolute;
-            width: 300px; height: 300px;
-            background: rgba(255, 77, 109, 0.1);
-            filter: blur(80px);
-            border-radius: 50%;
-            animation: floatBlur 10s infinite alternate;
-        }
-
-        @keyframes floatBlur {
-            0% { transform: translate(-50px, -50px); }
-            100% { transform: translate(50px, 50px); }
+        @keyframes float { 
+            0% { transform: translateY(100vh); opacity: 0; } 
+            50% { opacity: 0.5; } 
+            100% { transform: translateY(-10vh); opacity: 0; } 
         }
 
         /* =====================================================
-           2. STORY NARRATIVE (Chat Re-enactment)
+           2. THE STAGE (Characters)
            ===================================================== */
-        .chat-sequence {
+        .stage {
+            position: relative; width: 100%; height: 60vh;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 5%;
             z-index: 10;
-            text-align: center;
-            max-width: 500px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
 
-        .chat-line {
-            font-size: 1.4rem;
-            opacity: 0;
-            transform: translateY(15px);
-            transition: all 0.8s ease;
+        /* HIM (Visible) */
+        .actor-container {
+            position: relative; width: 40%; height: 100%;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+        }
+
+        .avatar {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 2px solid var(--border);
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+        }
+
+        /* HER (The Mystery - Blurred/Silhouette) */
+        .mystery-avatar {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: linear-gradient(135deg, #333, #111);
+            border: 2px dashed rgba(255,255,255,0.2);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3rem; color: rgba(255,255,255,0.1);
+            filter: blur(2px);
             position: relative;
         }
         
-        /* Differentiate speakers subtly */
-        .him { font-family: 'Poppins', sans-serif; font-size: 1.1rem; color: #aaa; font-style: normal; }
-        .her { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff; font-weight: 600; }
-        .narrator { font-size: 1rem; color: var(--accent-gold); margin-top: 20px; font-style: italic; letter-spacing: 1px;}
-
-        .visible { opacity: 1; transform: translateY(0); }
-
-        /* =====================================================
-           3. THE HUNT (Symbols of Sight vs Sound)
-           ===================================================== */
-        .scene-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20;
-            pointer-events: none; /* Enabled after story */
-        }
-
-        .hunt-item {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0;
-            transition: all 0.5s ease;
-            cursor: pointer;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
-        }
-
-        .hunt-item:hover { transform: scale(1.2); filter: drop-shadow(0 0 15px var(--accent-lock)); }
-
-        /* Positions */
-        #item-camera { top: 20%; left: 20%; }
-        #item-photo { bottom: 25%; right: 20%; }
-        #item-eye { top: 25%; right: 25%; }
-        #item-gallery { bottom: 15%; left: 30%; }
-        
-        /* THE KEY: The Microphone (Hidden) */
-        #item-mic { 
-            top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            font-size: 1.5rem;
-            color: var(--accent-gold);
-            opacity: 0; /* Starts invisible */
+        /* Lock Icon on Her */
+        .lock-icon {
+            position: absolute; font-size: 1.5rem; color: var(--border);
+            bottom: 0; right: 0; background: #000; border-radius: 50%; padding: 5px;
         }
 
         /* =====================================================
-           4. FEEDBACK & CURSOR
+           3. SPEECH BUBBLES
            ===================================================== */
-        .toast-msg {
-            position: fixed; bottom: 80px;
-            background: rgba(255,255,255,0.1);
+        .bubble-area {
+            position: absolute; bottom: 140px; width: 250px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .left-side { align-items: flex-start; left: 0; }
+        .right-side { align-items: flex-end; right: 0; }
+
+        .bubble {
+            background: var(--glass);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: white; font-size: 0.9rem;
-            opacity: 0; transition: opacity 0.5s;
-            pointer-events: none;
+            border: 1px solid var(--border);
+            padding: 12px 20px; border-radius: 15px;
+            font-size: 0.9rem; line-height: 1.4;
+            max-width: 100%;
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .bubble.him { border-bottom-left-radius: 2px; color: #a0c4ff; }
+        .bubble.her { border-bottom-right-radius: 2px; color: #ffc4d6; text-align: right; }
+        .bubble.show { opacity: 1; transform: translateY(0); }
+
+        /* =====================================================
+           4. INTERACTIVE PUZZLE UI
+           ===================================================== */
+        .puzzle-ui {
+            position: absolute; top: 20%; width: 100%; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity 1s;
+            z-index: 20;
+        }
+        .puzzle-ui.active { opacity: 1; pointer-events: auto; }
+
+        .narrator-text {
+            font-family: 'Cinzel', serif; font-size: 1.2rem; margin-bottom: 30px;
+            color: rgba(255,255,255,0.8); text-shadow: 0 0 10px rgba(255,255,255,0.3);
         }
 
-        #cursor-dot {
-            position: fixed; width: 10px; height: 10px;
-            background: white; border-radius: 50%;
-            pointer-events: none; z-index: 9999;
-            box-shadow: 0 0 20px white;
-            transition: transform 0.1s;
+        .icons-grid {
+            display: flex; justify-content: center; gap: 40px;
+            margin-top: 20px;
         }
 
-        .fade-out { opacity: 0; pointer-events: none; transition: opacity 1s ease; }
+        .icon-btn {
+            font-size: 2.5rem; cursor: pointer;
+            transition: transform 0.3s, filter 0.3s;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+            position: relative;
+        }
+        .icon-btn:hover { transform: scale(1.2); }
+
+        /* Denied Animation */
+        .shake { animation: shake 0.4s ease-in-out; color: var(--accent-deny); }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+        /* Success Animation */
+        .glow { animation: pulseGlow 1.5s infinite; color: var(--accent-glow); }
+        @keyframes pulseGlow { 0%{filter:drop-shadow(0 0 5px var(--accent-glow));} 50%{filter:drop-shadow(0 0 20px var(--accent-glow));} }
+
+        /* Toast Feedback */
+        .toast {
+            position: fixed; bottom: 10%; background: rgba(0,0,0,0.8);
+            color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 0.9rem; opacity: 0; transition: opacity 0.5s;
+        }
 
     </style>
 </head>
 <body>
 
-    <div class="fog-layer"></div>
-    <div class="floating-blur"></div>
+    <div id="particles"></div>
 
-    <div id="cursor-dot"></div>
-
-    <div class="chat-sequence" id="chat-box">
+    <div class="stage">
+        
+        <div class="actor-container">
+            <div class="bubble-area left-side" id="bubbles-him"></div>
+            <img src="assets/mus.png" class="avatar" alt="Him">
         </div>
 
-    <div class="scene-layer" id="hunt-scene">
-        <div class="hunt-item" id="item-camera" onclick="checkItem('camera')">📷</div>
-        <div class="hunt-item" id="item-photo" onclick="checkItem('photo')">🖼️</div>
-        <div class="hunt-item" id="item-eye" onclick="checkItem('eye')">👁️</div>
-        <div class="hunt-item" id="item-gallery" onclick="checkItem('gallery')">📂</div>
-        
-        <div class="hunt-item" id="item-mic" onclick="checkItem('mic')">🎙️</div>
+        <div class="actor-container">
+            <div class="bubble-area right-side" id="bubbles-her"></div>
+            <div class="mystery-avatar">
+                ?
+                <div class="lock-icon">🔒</div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="toast-msg" id="toast"></div>
+    <div class="puzzle-ui" id="puzzle">
+        <div class="narrator-text" id="narrator">I couldn't see you yet...</div>
+        <div class="icons-grid">
+            <div class="icon-btn" id="btn-cam" onclick="tryAction('camera')">📷</div>
+            <div class="icon-btn" id="btn-eye" onclick="tryAction('eye')">👁️</div>
+            <div class="icon-btn" id="btn-mic" onclick="tryAction('mic')">🎙️</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
-        // --- DATA: The Chat from Screenshot ---
-        const narrative = [
-            { text: '"Wap no tha..."', type: 'him' },
-            { text: '"No."', type: 'her' },
-            { text: '"Pic undo? Just kanan."', type: 'him' }, // Just to see
-            { text: '"No."', type: 'her' },
-            { text: '"I dont share my pic to anybody."', type: 'her' },
-            { text: '"Okkk"', type: 'him' },
-            { text: 'I couldn\'t see you yet...', type: 'narrator' },
-            { text: 'But maybe... I could hear you?', type: 'narrator' } // The Clue
+        // --- CONFIG ---
+        const DIALOGUE = [
+            { speaker: 'him', text: "Wap no tha..." },
+            { speaker: 'her', text: "No." },
+            { speaker: 'him', text: "Pic undo? Just kanan." }, // "Do you have a pic? Just to see."
+            { speaker: 'her', text: "No." },
+            { speaker: 'her', text: "I don't share my pic to anybody." },
+            { speaker: 'him', text: "Okkk..." }
         ];
 
-        // --- SETUP ---
-        const chatBox = document.getElementById('chat-box');
-        const scene = document.getElementById('hunt-scene');
-        const mic = document.getElementById('item-mic');
+        // --- ELEMENTS ---
+        const bubblesHim = document.getElementById('bubbles-him');
+        const bubblesHer = document.getElementById('bubbles-her');
+        const puzzleUI = document.getElementById('puzzle');
+        const narrator = document.getElementById('narrator');
         const toast = document.getElementById('toast');
-        const cursor = document.getElementById('cursor-dot');
 
-        window.onload = playStory;
+        // --- INIT ---
+        window.onload = () => {
+            createParticles();
+            setTimeout(playDialogue, 1000);
+        };
 
-        // --- STORY ANIMATION ---
-        async function playStory() {
-            for(let i=0; i<narrative.length; i++) {
-                const line = narrative[i];
-                const p = document.createElement('div');
-                p.className = `chat-line ${line.type}`;
-                p.innerText = line.text;
-                chatBox.appendChild(p);
-
-                // Wait for fade in
-                setTimeout(() => p.classList.add('visible'), 100);
-                
-                // Pause reading time
-                await wait(i === narrative.length - 1 ? 2000 : 1500);
+        // --- DIALOGUE ENGINE ---
+        async function playDialogue() {
+            for (let line of DIALOGUE) {
+                createBubble(line.speaker, line.text);
+                await wait(1500); // Read time
             }
             
-            revealHunt();
+            // End of chat -> Start Puzzle
+            await wait(1000);
+            startPuzzle();
         }
 
-        function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-        // --- HUNT REVEAL ---
-        function revealHunt() {
-            scene.style.pointerEvents = 'auto';
-            const items = document.querySelectorAll('.hunt-item');
+        function createBubble(speaker, text) {
+            const b = document.createElement('div');
+            b.className = `bubble ${speaker}`;
+            b.innerText = text;
             
-            items.forEach((item, idx) => {
-                setTimeout(() => {
-                    item.style.opacity = item.id === 'item-mic' ? '0.3' : '0.6';
-                    // Mic is harder to see intentionally
-                    item.style.animation = `floatBlur ${3 + idx}s infinite alternate`;
-                }, idx * 200);
-            });
-        }
-
-        // --- INTERACTION ---
-        function checkItem(type) {
-            let msg = "";
-            let correct = false;
-
-            switch(type) {
-                case 'camera': msg = "No. No pics allowed."; break;
-                case 'photo': msg = "She said: 'I don't share pics'."; break;
-                case 'eye': msg = "'Just kanan?' No, not yet."; break;
-                case 'gallery': msg = "The gallery was locked."; break;
-                case 'mic': 
-                    msg = "If not sight... then sound. ❤️"; 
-                    correct = true; 
-                    break;
+            if(speaker === 'him') {
+                bubblesHim.appendChild(b);
+            } else {
+                bubblesHer.appendChild(b);
             }
 
-            showFeedback(msg);
+            // Animate in
+            requestAnimationFrame(() => b.classList.add('show'));
 
-            if(correct) {
-                // Success Effect
-                mic.style.opacity = '1';
-                mic.style.color = '#ff4d6d';
-                mic.style.transform = 'scale(2)';
+            // Auto-scroll / Remove old
+            const parent = speaker === 'him' ? bubblesHim : bubblesHer;
+            if(parent.children.length > 2) {
+                parent.firstChild.style.opacity = '0';
+                setTimeout(() => parent.firstChild.remove(), 500);
+            }
+        }
+
+        // --- PUZZLE LOGIC ---
+        function startPuzzle() {
+            puzzleUI.classList.add('active');
+        }
+
+        function tryAction(type) {
+            const btn = document.getElementById(`btn-${type}`);
+            
+            if (type === 'camera' || type === 'eye') {
+                // FAIL
+                btn.classList.add('shake');
+                setTimeout(() => btn.classList.remove('shake'), 400);
                 
-                document.body.classList.add('fade-out');
+                let msg = type === 'camera' ? "She refused the photo." : "She wouldn't let me see.";
+                showToast(msg);
                 
-                // Redirect to the Voice Call Memory
+                // Hint
                 setTimeout(() => {
-                    window.location.href = "memory3-busstop.html";
+                    narrator.innerText = "But maybe... I could HEAR you?";
+                    document.getElementById('btn-mic').classList.add('glow');
+                }, 1500);
+
+            } else if (type === 'mic') {
+                // SUCCESS
+                narrator.innerHTML = "Yes.<br>The Voice.";
+                document.getElementById('btn-cam').style.opacity = '0';
+                document.getElementById('btn-eye').style.opacity = '0';
+                
+                btn.style.transform = "scale(3)";
+                btn.style.color = "#00d4ff";
+                
+                showToast("Connecting...");
+                
+                setTimeout(() => {
+                    document.body.style.opacity = 0;
+                    setTimeout(() => window.location.href = "memory3-busstop.html", 1000);
                 }, 1500);
             }
         }
 
-        function showFeedback(text) {
-            toast.innerText = text;
-            toast.style.opacity = '1';
-            setTimeout(() => toast.style.opacity = '0', 2500);
+        // --- UTILS ---
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.opacity = 1;
+            setTimeout(() => toast.style.opacity = 0, 2000);
         }
 
-        // --- CURSOR ---
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
+        function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function createParticles() {
+            const bg = document.getElementById('particles');
+            for(let i=0; i<30; i++) {
+                let p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random()*100 + 'vw';
+                p.style.animationDelay = Math.random()*5 + 's';
+                p.style.animationDuration = (8 + Math.random()*10) + 's';
+                bg.appendChild(p);
+            }
+        }
 
     </script>
 </body>

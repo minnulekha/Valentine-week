@@ -212,11 +212,11 @@
     </div>
 
     <div class="her-container" id="her">
-        <img src="assets/you.png" class="her-img" alt="Her">
+        <img src="assets/scl1.png" class="her-img" alt="Her">
     </div>
 
     <div class="him-container" id="him">
-        <img src="assets/h1.png" class="him-img" alt="Him">
+        <img src="assets/scb1.png" class="him-img" alt="Him">
         <div class="bike-emoji">🏍️</div>
     </div>
 
@@ -225,7 +225,7 @@
     <div class="thought-bubble" id="thought"></div>
 
     <div class="game-layer" id="g1">
-        <div class="instruction">First day... I was shaking.<br>Help me breathe.</div>
+        <div class="instruction">The First Meet... I was shivering.<br>Help me breathe.</div>
         <div class="breath-ring">
             <div class="breath-core" id="core"></div>
         </div>
@@ -234,7 +234,7 @@
 
     <div class="game-layer hidden" id="g2">
         <div class="instruction">I hear a bike...<br>Tap fast to bring him closer!</div>
-        <div class="pedal-btn" id="pedal-btn">🚲</div>
+        <div class="pedal-btn" id="pedal-btn">🏍️</div>
         <div class="progress-track"><div class="progress-fill" id="dist-fill"></div></div>
     </div>
 
@@ -281,7 +281,7 @@
         window.onload = () => {
             document.body.classList.add('loaded');
             her.classList.add('shaking'); 
-            showThought("I'm so nervous... my leg is shaking.");
+            showThought("I'm so nervous... I'm Shivering all over !");
         };
 
         // ================= GAME 1: BREATHE =================
@@ -388,7 +388,7 @@
         // ================= TREASURE HUNT =================
         function revealTreasureHunt(){
             // The riddle
-            showThought("We didn't stay here long...<br><b>Where was our second meeting?</b>");
+            showThought("We had a great day...<br><b>Where was our second meeting?</b>");
             
             // Activate the River Zone (Bottom area)
             const r = document.getElementById('river-answer');
@@ -410,7 +410,7 @@
             r.style.height = "100vh"; // Flood screen
             r.style.background = "#4facfe"; 
             
-            showThought("To the River... 🌊");
+            showThought("To the Karamana River... 🌊");
             
             setTimeout(()=>{
                 window.location.href = "memory4-river.html";

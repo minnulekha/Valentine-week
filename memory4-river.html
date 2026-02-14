@@ -369,8 +369,8 @@
             <img src="assets/you.png" class="her-img" id="herImg" alt="her">
         </div>
         <div class="bike-rig" id="bikeRig">
-            <img src="assets/you.png" class="her-seated" id="herSeated" alt="her seated">
-            <img src="assets/h1.png" class="him-img" id="himImg" alt="him">
+            <img src="assets/scl1.png" class="her-seated" id="herSeated" alt="her seated">
+            <img src="assets/secb.png" class="him-img" id="himImg" alt="him">
             <div class="bike-emoji">🏍️</div>
         </div>
     </div>
@@ -424,7 +424,7 @@
             let collected = 0;
             let holdProgress = 0;
             let holdInterval = null;
-            let currentGirlAvatar = 'assets/you.png';
+            let currentGirlAvatar = 'assets/scl1.png';
 
             // drag phase 3
             let dragListeners = { herTouch: null, himTouch: null, herMouse: null, himMouse: null, move: null, end: null };
@@ -517,7 +517,7 @@
                     herWrap.style.display = 'flex';
                     bikeRig.style.display = 'block';
                     setTimeout(() => { bikeRig.style.right = '15%'; }, 200);
-                    story.innerText = 'At last, he came.';
+                    story.innerText = 'The Second Meet :"At last, he came."';
                     instr.innerText = 'Tap her to sit on the bike';
                     herWrap.onclick = function sitHandler() {
                         herWrap.onclick = null;
@@ -546,8 +546,8 @@
                     herImg.src = currentGirlAvatar;
                     herSeated.src = currentGirlAvatar;
                     herSeated.style.display = 'none';
-                    story.innerText = 'He dropped me at my house. I changed...';
-                    instr.innerText = 'Tap the door';
+                    story.innerText = 'He dropped me at my house. I changed ...';
+                    instr.innerText = 'Tap the door to get in';
                     door.onclick = function openDoor() {
                         door.classList.add('open');
                         instr.style.opacity = '0';
@@ -577,20 +577,24 @@
                     herWrap.style.left = '15%';
                     bikeRig.style.right = '15%';
                     bikeRig.style.transition = 'left 0.1s, right 0.1s';
-                    story.innerText = 'We went out again. We talked.';
+                    story.innerText = 'We went to Karamana river. We talked.   (Drag them closer)';
                     instr.innerText = 'Drag them closer';
+                    
                     enableDrag();
                 }
                 else if (p === 4) {
                     waterGlow.style.opacity = '0.2';
-                    story.innerText = 'He hugged me.';
+                    glowBetween.style.opacity = '0';
+                    glowTriggered = false;
+
+                    story.innerText = 'He hugged me. (Swipe them)';
                     instr.innerText = 'Press & hold anywhere';
                     removeDragListeners();
                     setupHug();
                 }
                 else if (p === 5) {
                     removeHugListeners();
-                    story.innerText = 'We kissed each other.';
+                    story.innerText = 'We kissed each other. (Swipe them)';
                     instr.innerText = 'Swipe / drag right';
                     setupSwipe();
                 }
@@ -601,7 +605,7 @@
                     scenery.innerHTML = '<div class="decor" style="left:5%;">🏪</div>';
                     herWrap.style.left = '20%';
                     bikeRig.style.right = '15%';
-                    story.innerText = 'He dropped me home. We said goodbye... With a couple of kisses and a hug.';
+                    story.innerText = 'He dropped me home. We said goodbye... With a couple of kisses and a hug.(Tap 3 items for memories)';
                     instr.innerText = 'Tap 3 items for memories';
                     spawnItems();
                 }
@@ -715,13 +719,18 @@
             }
 
             function hugStart(e) {
-                e.preventDefault();
-                hugTimeout = setTimeout(() => {
-                    createHearts(20);
-                    body.style.background = 'linear-gradient(to bottom, #ffd1d1, #ffe6e6)';
-                    setTimeout(() => setPhase(5), 1500);
-                }, 2000);
-            }
+    if (phase !== 4) return;   // ADD THIS LINE
+    e.preventDefault();
+
+    clearTimeout(hugTimeout);  // prevent stacking
+
+    hugTimeout = setTimeout(() => {
+        createHearts(20);
+        body.style.background = 'linear-gradient(to bottom, #ffd1d1, #ffe6e6)';
+        setTimeout(() => setPhase(5), 1500);
+    }, 2000);
+}
+
 
             function hugEnd(e) {
                 clearTimeout(hugTimeout);
@@ -779,6 +788,9 @@
                 changeUI.style.display = 'flex';
                 story.innerText = 'choose a new dress...';
                 instr.innerText = 'hold the button';
+                story.classList.add('active');
+instr.classList.add('active');
+
                 holdProgress = 0;
                 btnFill.style.height = '0%';
                 function fill() {
@@ -803,7 +815,7 @@
             }
             function finishChange() {
                 changeUI.style.display = 'none';
-                currentGirlAvatar = 'assets/yo1.png';
+                currentGirlAvatar = 'assets/sec.png';
                 herImg.src = currentGirlAvatar;
                 herSeated.src = currentGirlAvatar;
                 herImg.style.opacity = '1';
@@ -843,7 +855,7 @@
                 for (let i=0; i<count; i++) {
                     let h = document.createElement('div');
                     h.className = 'heart';
-                    h.innerText = '❤️';
+                    h.innerText = '💋';
                     h.style.left = (30 + Math.random()*40) + '%';
                     h.style.top = (40 + Math.random()*30) + '%';
                     body.appendChild(h);
