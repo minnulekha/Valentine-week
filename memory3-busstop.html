@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory 03: The Meeting</title>
+    <style>
+        /* =====================================================
+           1. CORE & ATMOSPHERE
+           ===================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:ital,wght@1,600&display=swap');
+
+        :root {
+            /* Sunset to Twilight Gradient */
+            --sky: linear-gradient(180deg, #2b1055 0%, #7597de 50%, #fea49f 100%);
+            --ground: #1a1025;
+            --river-hint: rgba(79, 172, 254, 0.2);
+            --accent-gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            height: 100vh; width: 100vw; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: var(--sky);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+            opacity: 0; transition: opacity 1.5s ease;
+        }
+        body.loaded { opacity: 1; }
+
+        /* Cinematic Vignette */
+        .vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.5));
+            pointer-events: none; z-index: 100;
+        }
+
+        /* =====================================================
+           2. SCENERY
+           ===================================================== */
+        .scenery { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .cloud { position: absolute; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(15px); animation: drift 60s linear infinite; }
+        @keyframes drift { from {transform:translateX(-100px);} to {transform:translateX(110vw);} }
+
+        /* Ground */
+        .ground {
+            position: absolute; bottom: 0; width: 100%; height: 18vh;
+            background: var(--ground); z-index: 10;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Bus Stop Structure (Moved to ~25% Left) */
+        .bus-stop-layer { position: absolute; bottom: 18vh; left: 25%; z-index: 15; width: 150px; }
+        .board { font-size: 3rem; filter: brightness(0.7); position: absolute; top: -140px; left: -10px; }
+        .pole { width: 6px; height: 140px; background: #333; position: absolute; bottom: 0; left: 10px; }
+        .bench { width: 140px; height: 15px; background: #4e342e; border-radius: 5px; position: absolute; bottom: 0; left: 30px; }
+
+        /* =====================================================
+           3. CHARACTERS
+           ===================================================== */
+        
+        /* HER (Sitting on bench - Aligned with Bus Stop) */
+        .her-container {
+            /* 25% (Bus Stop) + Offset to sit on bench */
+            position: absolute; bottom: 19vh; left: 32%; 
+            z-index: 20; display: flex; flex-direction: column; align-items: center;
+        }
+        .her-img {
+            width: 80px; height: auto; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+        .her-body { font-size: 3rem; margin-top: -20px; z-index: -1; opacity:0; } 
+        
+        .shaking { animation: anxious 0.2s infinite; transform-origin: bottom center; }
+        @keyframes anxious { 0%{transform:rotate(0deg);} 25%{transform:rotate(1deg);} 75%{transform:rotate(-1deg);} }
+
+        /* HIM (Bike - Starts Offscreen Right) */
+        .him-container {
+            position: absolute; bottom: 16vh; right: -400px; /* Start off screen */
+            z-index: 25; display: flex; flex-direction: column; align-items: center;
+            transition: right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .him-img {
+            width: 90px; height: auto;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+            margin-bottom: -30px; margin-right: 15px; z-index: 2;
+        }
+        .bike-emoji {
+            font-size: 6rem; transform: scaleX(-1); /* Face left */
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.6)); z-index: 1;
+        }
+
+        /* =====================================================
+           4. THOUGHT BUBBLES (Near Girl's Head)
+           ===================================================== */
+        .thought-bubble {
+            position: absolute; 
+            bottom: 40vh; /* Positioned above the girl */
+            left: 32%;    /* Aligned horizontally with the girl */
+            transform: translateX(-50%) translateY(20px);
+            
+            background: white; color: #333; padding: 12px 20px;
+            border-radius: 15px;
+            font-size: 0.85rem; font-weight: 500;
+            
+            opacity: 0; transition: all 0.5s ease;
+            z-index: 100; width: max-content; max-width: 200px; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
+        /* Speech Bubble Tail */
+        .thought-bubble::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0; border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .thought-bubble.active { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* =====================================================
+           5. GAME UI
+           ===================================================== */
+        .game-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 80%;
+            z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+
+        .instruction {
+            color: white; font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 25px;
+            text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Game 1: Breath */
+        .breath-ring {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .breath-core {
+            width: 15px; height: 15px; background: white; border-radius: 50%;
+            box-shadow: 0 0 20px white; transition: transform 0.05s linear;
+        }
+        .hold-btn {
+            margin-top: 40px; padding: 15px 40px; background: white; color: #333;
+            border-radius: 30px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Game 2: Pedal */
+        .pedal-btn {
+            width: 100px; height: 100px; background: radial-gradient(#ff9a9e, #fe688b);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem; box-shadow: 0 0 30px rgba(255, 77, 109, 0.4);
+            cursor: pointer; animation: pulse 1.5s infinite; border: 4px solid rgba(255,255,255,0.2);
+        }
+        .pedal-btn:active { transform: scale(0.9); }
+        @keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.05);} }
+        
+        .progress-track { width: 200px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--accent-gold); transition: width 0.3s; }
+
+        /* Game 3: Fog */
+        .fog-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 45; cursor: crosshair; }
+
+        /* =====================================================
+           6. FINAL TREASURE (Unlabeled)
+           ===================================================== */
+        .river-zone {
+            position: absolute; bottom: 0; width: 100%; height: 0; 
+            background: linear-gradient(to top, rgba(79, 172, 254, 0.3), transparent);
+            z-index: 200; pointer-events: none; opacity: 0;
+            transition: height 2s ease, opacity 2s ease; cursor: pointer;
+        }
+        
+        .ripple {
+            position: absolute; bottom: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(255,255,255,0.1) 25px, transparent 30px);
+            animation: flow 6s linear infinite; opacity: 0.6;
+        }
+        @keyframes flow { from{background-position: 0 0;} to{background-position: 100px 0;} }
+
+        /* Toast */
+        .toast {
+            position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+            border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 300;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="vignette"></div>
+
+    <div class="scenery">
+        <div class="cloud" style="top:10%; width:120px; height:40px; animation-duration:50s"></div>
+        <div class="cloud" style="top:25%; left:50%; width:160px; height:50px; animation-duration:65s"></div>
+    </div>
+
+    <div class="bus-stop-layer">
+        <div class="board">🚏</div>
+        <div class="pole"></div>
+        <div class="bench"></div>
+    </div>
+
+    <div class="her-container" id="her">
+        <img src="assets/you.png" class="her-img" alt="Her">
+    </div>
+
+    <div class="him-container" id="him">
+        <img src="assets/h1.png" class="him-img" alt="Him">
+        <div class="bike-emoji">🏍️</div>
+    </div>
+
+    <div class="ground"></div>
+
+    <div class="thought-bubble" id="thought"></div>
+
+    <div class="game-layer" id="g1">
+        <div class="instruction">First day... I was shaking.<br>Help me breathe.</div>
+        <div class="breath-ring">
+            <div class="breath-core" id="core"></div>
+        </div>
+        <div class="hold-btn" id="hold-btn">Hold to Inhale</div>
+    </div>
+
+    <div class="game-layer hidden" id="g2">
+        <div class="instruction">I hear a bike...<br>Tap fast to bring him closer!</div>
+        <div class="pedal-btn" id="pedal-btn">🚲</div>
+        <div class="progress-track"><div class="progress-fill" id="dist-fill"></div></div>
+    </div>
+
+    <div class="game-layer hidden" id="g3">
+        <div class="instruction" id="fog-txt">It's blurry...<br>Swipe to wipe the fog.</div>
+        <canvas class="fog-canvas" id="fogCanvas"></canvas>
+    </div>
+
+    <div class="river-zone" id="river-answer">
+        <div class="ripple"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // --- ELEMENTS ---
+        const her = document.getElementById('her');
+        const him = document.getElementById('him');
+        const thought = document.getElementById('thought');
+        
+        // Game 1
+        const g1 = document.getElementById('g1');
+        const holdBtn = document.getElementById('hold-btn');
+        const core = document.getElementById('core');
+        
+        // Game 2
+        const g2 = document.getElementById('g2');
+        const pedalBtn = document.getElementById('pedal-btn');
+        const distFill = document.getElementById('dist-fill');
+        
+        // Game 3
+        const g3 = document.getElementById('g3');
+        const canvas = document.getElementById('fogCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let breaths = 0;
+        let holding = false;
+        let scale = 1;
+
+        let taps = 0;
+        const REQUIRED_TAPS = 20;
+
+        window.onload = () => {
+            document.body.classList.add('loaded');
+            her.classList.add('shaking'); 
+            showThought("I'm so nervous... my leg is shaking.");
+        };
+
+        // ================= GAME 1: BREATHE =================
+        holdBtn.addEventListener('mousedown', startHold);
+        holdBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); startHold()});
+        holdBtn.addEventListener('mouseup', stopHold);
+        holdBtn.addEventListener('touchend', stopHold);
+
+        function startHold(){ holding=true; holdBtn.innerText="Inhaling..."; expand(); }
+        function stopHold(){ holding=false; holdBtn.innerText="Hold"; scale=1; core.style.transform='scale(1)'; }
+        
+        function expand(){
+            if(!holding) return;
+            scale += 0.05;
+            core.style.transform = `scale(${scale})`;
+            if(scale > 5){
+                breaths++; holding=false; scale=1; core.style.transform='scale(1)'; 
+                holdBtn.innerText=`Exhale... (${breaths}/3)`;
+                if(breaths >= 3) finishG1();
+            } else requestAnimationFrame(expand);
+        }
+
+        function finishG1(){
+            her.classList.remove('shaking');
+            g1.classList.add('hidden');
+            showThought("Okay... I'm calm.");
+            setTimeout(()=>{ showThought("Wait... I hear a bike."); startG2(); }, 2000);
+        }
+
+        // ================= GAME 2: PEDAL =================
+        function startG2(){ g2.classList.remove('hidden'); }
+
+        pedalBtn.addEventListener('click', () => {
+            taps++;
+            let progress = taps / REQUIRED_TAPS;
+            distFill.style.width = (progress*100) + '%';
+            
+            // Positioning Logic:
+            // Start: -400px (Offscreen Right)
+            // End Target: Next to Her
+            // Her is at Left 32%. So He should be at Right 45% approx to be close.
+            
+            // Calc using vw to be safe
+            // Start: -50vw. End: 45vw.
+            let startPos = -50; 
+            let endPos = 45;    
+            let currentPos = startPos + (progress * (endPos - startPos));
+            
+            him.style.right = currentPos + 'vw';
+
+            if(taps === 5) showThought("Is that him?");
+            if(taps === 10) showThought("He's coming closer!");
+            
+            if(taps >= REQUIRED_TAPS) finishG2();
+        });
+
+        function finishG2(){
+            g2.classList.add('hidden');
+            showThought("He stopped right next to me.");
+            
+            // Snap to final position
+            him.style.transition = "right 1s ease";
+            him.style.right = "45%"; 
+            
+            setTimeout(()=>{ showThought("I was too shy to look up..."); startG3(); }, 2500);
+        }
+
+        // ================= GAME 3: FOG =================
+        function startG3(){
+            g3.classList.remove('hidden');
+            initCanvas();
+        }
+
+        function initCanvas(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'destination-out';
+            canvas.addEventListener('mousemove', scratch);
+            canvas.addEventListener('touchmove', scratch);
+        }
+
+        let cleared = 0;
+        function scratch(e){
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI*2); ctx.fill();
+            cleared++;
+            if(cleared > 100) document.getElementById('fog-txt').style.opacity = 0;
+            if(cleared > 300) finishG3();
+        }
+
+        let g3Done = false;
+        function finishG3(){
+            if(g3Done) return; g3Done=true;
+            canvas.style.transition="opacity 1s"; canvas.style.opacity=0;
+            setTimeout(()=>g3.classList.add('hidden'), 1000);
+            
+            showThought("It WAS you. ❤️");
+            setTimeout(revealTreasureHunt, 3000);
+        }
+
+        // ================= TREASURE HUNT =================
+        function revealTreasureHunt(){
+            // The riddle
+            showThought("We didn't stay here long...<br><b>Where was our second meeting?</b>");
+            
+            // Activate the River Zone (Bottom area)
+            const r = document.getElementById('river-answer');
+            r.style.height = "15vh"; // Rise slightly
+            r.style.opacity = 1;
+            r.style.pointerEvents = 'auto'; // Make clickable
+
+            // Wrong clicks
+            document.querySelector('.bus-stop-layer').onclick = () => toast("We left this place.");
+            document.querySelector('.her-container').onclick = () => toast("I followed you.");
+            document.querySelector('.him-container').onclick = () => toast("You took me somewhere.");
+            
+            // Correct click
+            r.onclick = foundRiver;
+        }
+
+        function foundRiver(){
+            const r = document.getElementById('river-answer');
+            r.style.height = "100vh"; // Flood screen
+            r.style.background = "#4facfe"; 
+            
+            showThought("To the River... 🌊");
+            
+            setTimeout(()=>{
+                window.location.href = "memory4-river.html";
+            }, 1500);
+        }
+
+        function toast(msg){
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = 1;
+            setTimeout(()=> t.style.opacity=0, 2000);
+        }
+
+        function showThought(txt){
+            thought.classList.remove('active');
+            setTimeout(()=>{
+                thought.innerHTML = txt;
+                thought.classList.add('active');
+            }, 500);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory 04 · first meeting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom, #b0e0e6, #f0e68c);
+            transition: background 1.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        /* scenery layer */
+        .scenery {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 16vh;
+            background: #6b8e23;
+            border-top: 4px solid #2e4e1e;
+            z-index: 5;
+            transition: background 0.8s;
+        }
+
+        .road-line {
+            position: absolute;
+            top: 40%;
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #fff 0px, #fff 20px, transparent 20px, transparent 40px);
+            opacity: 0.6;
+        }
+
+        .decor {
+            position: absolute;
+            bottom: 18vh;
+            font-size: 3.5rem;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        /* house + door (phase 2) */
+        .home-container {
+            position: absolute;
+            bottom: 16vh;
+            left: 10%;
+            width: 130px;
+            height: 200px;
+            z-index: 8;
+            display: none;
+            pointer-events: auto;
+        }
+        .door-frame {
+            width: 100%;
+            height: 100%;
+            background: #bcaaa4;
+            border: 5px solid #7b5e4b;
+            border-bottom: none;
+            perspective: 600px;
+        }
+        .door {
+            width: 100%;
+            height: 100%;
+            background: #d7ccc8;
+            transform-origin: left;
+            transition: transform 0.8s ease;
+            border-left: 3px solid #a1887f;
+            position: relative;
+        }
+        .door.open { transform: rotateY(-105deg); }
+        .knob {
+            position: absolute; right: 8px; top: 50%;
+            width: 12px; height: 12px; background: #ffd966;
+            border-radius: 50%;
+        }
+
+        /* river / sunset glow */
+        .water-glow {
+            position: absolute;
+            bottom: 16vh;
+            width: 100%;
+            height: 20vh;
+            background: radial-gradient(circle at 50% 0%, #ffb6c1, transparent);
+            opacity: 0;
+            transition: opacity 1s;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* bridge (final hidden object) */
+        .bridge-hidden {
+            position: absolute;
+            bottom: 20vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 40px;
+            cursor: pointer;
+            opacity: 0.2;
+            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.1);
+            border-radius: 20px;
+            z-index: 200;
+            pointer-events: auto;
+            text-align: center;
+            font-size: 1.2rem;
+            color: white;
+            text-shadow: 0 0 5px black;
+        }
+        .bridge-hidden:hover { opacity: 0.6; }
+        .bridge-hidden span { display: block; margin-top: 5px; }
+
+        /* other hidden clues (poetic feedback) */
+        .hidden-clue {
+            position: absolute;
+            bottom: 30vh;
+            width: 60px;
+            height: 30px;
+            background: transparent;
+            z-index: 190;
+            pointer-events: auto;
+            cursor: pointer;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+        }
+        #clue-date { left: 20%; }
+        #clue-city1 { left: 40%; }
+        #clue-city2 { left: 70%; }
+        #clue-ring { left: 85%; bottom: 25vh; width: 40px; height: 40px; border-radius: 50%; border: 2px dotted rgba(255,215,0,0.3); }
+
+        /* actors */
+        .stage {
+            position: absolute;
+            bottom: 16vh;
+            width: 100%;
+            height: 220px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .her-wrap {
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            transition: left 0.5s ease;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 21;
+        }
+        .her-img { width: 85px; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.3)); }
+
+        .bike-rig {
+            position: absolute;
+            bottom: 0;
+            right: -200px;
+            width: 160px;
+            height: 160px;
+            transition: right 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            pointer-events: auto;
+            z-index: 22;
+        }
+        .him-img {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 90px;
+            z-index: 2;
+        }
+        .bike-emoji {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: 6rem;
+            transform: scaleX(-1);
+            filter: drop-shadow(0 6px 6px rgba(0,0,0,0.5));
+            z-index: 1;
+        }
+        .her-seated {
+            position: absolute;
+            bottom: 50px;
+            right: 60px;
+            width: 80px;
+            display: none;
+            z-index: 3;
+        }
+
+        /* text container */
+        .text-box {
+            position: absolute;
+            top: 10%;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .story {
+            background: rgba(255,255,240,0.95);
+            padding: 14px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(15px);
+            transition: 0.4s;
+            color: #3b2e1e;
+        }
+        .story.active { opacity: 1; transform: translateY(0); }
+        .instruction {
+            margin-top: 12px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: 0.4s;
+            display: inline-block;
+        }
+        .instruction.active { opacity: 1; }
+
+        /* change button (phase2) */
+        .change-ui {
+            position: absolute;
+            bottom: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+        .hold-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #ff4d6d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background: #ff4d6d;
+            transition: height 0.05s linear;
+        }
+        .btn-icon { z-index: 2; }
+
+        /* glow between avatars (phase3) */
+        .glow-between {
+            position: absolute;
+            background: radial-gradient(circle, #ffb3c6 0%, transparent 70%);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            z-index: 15;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* items (phase6) */
+        .item {
+            position: absolute;
+            font-size: 3.2rem;
+            filter: drop-shadow(2px 4px 6px black);
+            cursor: pointer;
+            opacity: 0;
+            animation: float 3s infinite;
+            z-index: 60;
+            transition: opacity 0.3s, transform 0.2s;
+            pointer-events: auto;
+        }
+        @keyframes float { 0%{ transform: translateY(0); } 50%{ transform: translateY(-12px); } }
+
+        /* hearts */
+        .heart {
+            position: absolute;
+            color: #ff4d6d;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 200;
+            animation: heartUp 1.5s forwards;
+        }
+        @keyframes heartUp { to { transform: translateY(-180px) scale(1.5); opacity: 0; } }
+
+        .fade-out { opacity: 0 !important; transition: opacity 1s; }
+
+        /* poetic wrong-click feedback */
+        .poetic-tip {
+            position: fixed;
+            bottom: 30%;
+            background: rgba(255,255,200,0.9);
+            color: #7b3f00;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-style: italic;
+            font-size: 0.9rem;
+            z-index: 300;
+            transition: opacity 1s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- scenery -->
+    <div class="scenery" id="scenery">
+        <div class="decor" style="left:5%;">🏫</div>
+        <div class="decor" style="right:5%;">🌳</div>
+    </div>
+    <div class="ground" id="ground"><div class="road-line"></div></div>
+    <div class="water-glow" id="waterGlow"></div>
+
+    <!-- house (phase2) -->
+    <div class="home-container" id="home">
+        <div class="door-frame">
+            <div class="door" id="door"><div class="knob"></div></div>
+        </div>
+    </div>
+
+    <!-- hidden clues (final) -->
+    <div class="hidden-clue" id="clue-date" data-type="wrong">📅 10</div>
+    <div class="hidden-clue" id="clue-city1" data-type="wrong">🌆 Kochi</div>
+    <div class="hidden-clue" id="clue-city2" data-type="wrong">🌃 Kodai</div>
+    <div class="hidden-clue" id="clue-ring" data-type="wrong">💍</div>
+    <div class="bridge-hidden" id="bridgeFinal" data-type="correct"><span>🌉</span></div>
+
+    <!-- actors -->
+    <div class="stage">
+        <div class="her-wrap" id="herWrap">
+            <img src="assets/you.png" class="her-img" id="herImg" alt="her">
+        </div>
+        <div class="bike-rig" id="bikeRig">
+            <img src="assets/you.png" class="her-seated" id="herSeated" alt="her seated">
+            <img src="assets/h1.png" class="him-img" id="himImg" alt="him">
+            <div class="bike-emoji">🏍️</div>
+        </div>
+    </div>
+
+    <!-- glow between (phase3) -->
+    <div class="glow-between" id="glowBetween"></div>
+
+    <!-- ui text -->
+    <div class="text-box">
+        <div class="story" id="story"></div>
+        <div class="instruction" id="instr"></div>
+    </div>
+
+    <!-- change outfit button -->
+    <div class="change-ui" id="changeUI">
+        <div class="hold-btn" id="holdBtn">
+            <div class="btn-fill" id="btnFill"></div>
+            <span class="btn-icon">👗</span>
+        </div>
+    </div>
+
+    <!-- items container (phase6) -->
+    <div id="itemsLayer" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50;"></div>
+
+    <script>
+        (function(){
+            // ----- elements -----
+            const body = document.body;
+            const story = document.getElementById('story');
+            const instr = document.getElementById('instr');
+            const ground = document.getElementById('ground');
+            const scenery = document.getElementById('scenery');
+            const home = document.getElementById('home');
+            const door = document.getElementById('door');
+            const herWrap = document.getElementById('herWrap');
+            const herImg = document.getElementById('herImg');
+            const bikeRig = document.getElementById('bikeRig');
+            const herSeated = document.getElementById('herSeated');
+            const himImg = document.getElementById('himImg');
+            const waterGlow = document.getElementById('waterGlow');
+            const glowBetween = document.getElementById('glowBetween');
+            const changeUI = document.getElementById('changeUI');
+            const holdBtn = document.getElementById('holdBtn');
+            const btnFill = document.getElementById('btnFill');
+            const itemsLayer = document.getElementById('itemsLayer');
+            const bridgeFinal = document.getElementById('bridgeFinal');
+            const wrongClues = document.querySelectorAll('.hidden-clue[data-type="wrong"]');
+
+            // state
+            let phase = 0;
+            let collected = 0;
+            let holdProgress = 0;
+            let holdInterval = null;
+            let currentGirlAvatar = 'assets/you.png'; // default, will change after dress-up
+
+            // for drag in phase 3
+            let dragActive = false;
+            let dragListeners = { her: null, him: null, move: null, end: null };
+            let glowTriggered = false;
+
+            // for hug phase
+            let hugListenersAttached = false;
+            let hugTimeout = null;
+            let herTouched = false, himTouched = false;
+
+            // ----- helper: poetic feedback -----
+            function showPoetic(msg) {
+                const tip = document.createElement('div');
+                tip.className = 'poetic-tip';
+                tip.innerText = msg;
+                tip.style.left = '50%';
+                tip.style.transform = 'translateX(-50%)';
+                body.appendChild(tip);
+                setTimeout(() => tip.remove(), 1500);
+            }
+
+            // ----- phase control with cleanup -----
+            function setPhase(p) {
+                // cleanup previous phase's special listeners
+                if (phase === 3) removeDragListeners();
+                if (phase === 4) removeHugListeners();
+                if (phase === 5) removeSwipeListeners();
+
+                phase = p;
+                story.classList.remove('active');
+                instr.classList.remove('active');
+                setTimeout(() => {
+                    runPhase(p);
+                }, 300);
+            }
+
+            function removeDragListeners() {
+                if (dragListeners.her) herWrap.removeEventListener('touchstart', dragListeners.her);
+                if (dragListeners.him) bikeRig.removeEventListener('touchstart', dragListeners.him);
+                if (dragListeners.move) document.removeEventListener('touchmove', dragListeners.move);
+                if (dragListeners.end) document.removeEventListener('touchend', dragListeners.end);
+                dragListeners = { her: null, him: null, move: null, end: null };
+                dragActive = false;
+                glowTriggered = false; // reset for next time
+            }
+
+            function removeHugListeners() {
+                // hug listeners are on document, we'll just remove them
+                document.removeEventListener('touchstart', hugTouchStart);
+                document.removeEventListener('touchend', hugTouchEnd);
+                document.removeEventListener('touchcancel', hugTouchEnd);
+                hugListenersAttached = false;
+                clearTimeout(hugTimeout);
+                herTouched = false; himTouched = false;
+            }
+
+            function removeSwipeListeners() {
+                document.removeEventListener('touchstart', swipeStart);
+                document.removeEventListener('touchend', swipeEnd);
+            }
+
+            // ----- phase logic -----
+            function runPhase(p) {
+                story.classList.add('active');
+                instr.classList.add('active');
+
+                if (p === 1) { // pickup
+                    body.style.background = 'linear-gradient(to bottom, #b0e0e6, #f5f5dc)';
+                    ground.style.background = '#6b8e23';
+                    scenery.innerHTML = '<div class="decor" style="left:5%;">🏫</div><div class="decor" style="right:5%;">🚸</div>';
+                    home.style.display = 'none';
+                    bikeRig.style.right = '-200px';
+                    herWrap.style.left = '10%';
+                    herImg.src = currentGirlAvatar;  // use current (default initially)
+                    herSeated.src = currentGirlAvatar; // sync seated
+                    herSeated.style.display = 'none';
+                    herWrap.style.display = 'flex';
+                    bikeRig.style.display = 'block';
+                    setTimeout(() => { bikeRig.style.right = '15%'; }, 200);
+                    story.innerText = 'At last, he came.';
+                    instr.innerText = 'Tap her to sit on the bike';
+                    herWrap.onclick = function sitHandler() {
+                        herWrap.onclick = null;
+                        herWrap.style.left = 'calc(80% - 80px)';
+                        setTimeout(() => {
+                            herWrap.style.display = 'none';
+                            herSeated.style.display = 'block';
+                            setTimeout(() => {
+                                bikeRig.style.transition = 'right 1.8s ease-in';
+                                bikeRig.style.right = '110%';
+                                setTimeout(() => setPhase(2), 2000);
+                            }, 500);
+                        }, 800);
+                    };
+                } 
+                else if (p === 2) { // home + change
+                    body.style.background = '#faf0e6';
+                    ground.style.background = '#a1887f';
+                    scenery.innerHTML = '<div class="decor" style="left:5%;">🏡</div>';
+                    home.style.display = 'block';
+                    bikeRig.style.display = 'block';
+                    bikeRig.style.transition = 'none';
+                    bikeRig.style.right = '10%';
+                    herWrap.style.display = 'flex';
+                    herWrap.style.left = '20%';
+                    herImg.src = currentGirlAvatar;
+                    herSeated.src = currentGirlAvatar;
+                    herSeated.style.display = 'none';
+                    story.innerText = 'He dropped me at my house. I changed...';
+                    instr.innerText = 'Tap the door';
+                    door.onclick = function openDoor() {
+                        door.classList.add('open');
+                        instr.style.opacity = '0';
+                        herWrap.style.transition = 'left 0.8s';
+                        herWrap.style.left = '45%';
+                        setTimeout(() => {
+                            herImg.style.opacity = '0';
+                            setTimeout(() => {
+                                door.classList.remove('open');
+                                startChangeGame();
+                            }, 400);
+                        }, 700);
+                    };
+                }
+                else if (p === 3) { // riverside / sunset
+                    body.style.background = 'linear-gradient(to bottom, #ff9a9e, #fad0c4)';
+                    ground.style.background = '#5d6d3e';
+                    waterGlow.style.opacity = '0.6';
+                    home.style.display = 'none';
+                    scenery.innerHTML = '<div class="decor" style="left:5%;">🌅</div><div class="decor" style="right:5%;">🌾</div>';
+                    bikeRig.style.display = 'block';
+                    herWrap.style.display = 'flex';
+                    herImg.src = currentGirlAvatar;  // keep changed avatar
+                    herSeated.src = currentGirlAvatar;
+                    herImg.style.opacity = '1';
+                    herSeated.style.display = 'none';
+                    herWrap.style.left = '15%';
+                    bikeRig.style.right = '15%';
+                    bikeRig.style.transition = 'left 0.1s, right 0.1s';
+                    story.innerText = 'We went out again. We talked.';
+                    instr.innerText = 'Drag them closer';
+                    enableDrag();
+                }
+                else if (p === 4) { // hug
+                    waterGlow.style.opacity = '0.2';
+                    story.innerText = 'He hugged me.';
+                    instr.innerText = 'Hold both (two fingers)';
+                    // make sure drag is off
+                    removeDragListeners();
+                    // setup hug listeners
+                    setupHug();
+                }
+                else if (p === 5) { // kiss
+                    removeHugListeners();
+                    story.innerText = 'We kissed each other.';
+                    instr.innerText = 'Swipe right slowly';
+                    setupSwipe();
+                }
+                else if (p === 6) { // Diaby & Goodbye (items)
+                    body.style.background = '#2c3e50';
+                    ground.style.background = '#3e2b1b';
+                    waterGlow.style.opacity = '0';
+                    scenery.innerHTML = '<div class="decor" style="left:5%;">🏪</div>';
+                    herWrap.style.left = '20%';
+                    bikeRig.style.right = '15%';
+                    story.innerText = 'He dropped me home. We said goodbye... With a couple of kisses and a hug.';
+                    instr.innerText = 'Tap 3 items for memories';
+                    spawnItems();
+                }
+                else if (p === 7) { // final clue
+                    story.innerText = 'That day ended... But something new had begun.';
+                    instr.innerText = '';
+                    bridgeFinal.style.opacity = '0.5';
+                    wrongClues.forEach(el => {
+                        el.addEventListener('click', function wrong(e) {
+                            e.stopPropagation();
+                            showPoetic('just a whisper...');
+                        });
+                    });
+                    bridgeFinal.addEventListener('click', function correct() {
+                        body.classList.add('fade-out');
+                        setTimeout(() => window.location.href = 'memory5-melekadavu.html', 800);
+                    });
+                }
+            }
+
+            // ----- drag for phase 3 -----
+            function enableDrag() {
+                let startXHer, startLeftHer, startXRig, startRightRig;
+
+                function dragHerStart(e) {
+                    e.preventDefault();
+                    let touch = e.touches[0];
+                    startXHer = touch.clientX;
+                    startLeftHer = parseFloat(herWrap.style.left) || 15;
+                    document.addEventListener('touchmove', dragMove);
+                    document.addEventListener('touchend', dragEnd);
+                }
+                function dragRigStart(e) {
+                    e.preventDefault();
+                    let touch = e.touches[0];
+                    startXRig = touch.clientX;
+                    startRightRig = parseFloat(bikeRig.style.right) || 15;
+                    document.addEventListener('touchmove', dragMove);
+                    document.addEventListener('touchend', dragEnd);
+                }
+                function dragMove(e) {
+                    e.preventDefault();
+                    // handle both possible moves (only one active at a time)
+                    if (startXHer !== undefined) {
+                        let touch = e.touches[0];
+                        let dx = touch.clientX - startXHer;
+                        let newLeft = startLeftHer + (dx / window.innerWidth) * 100;
+                        newLeft = Math.min(70, Math.max(5, newLeft));
+                        herWrap.style.left = newLeft + '%';
+                    } else if (startXRig !== undefined) {
+                        let touch = e.touches[0];
+                        let dx = touch.clientX - startXRig;
+                        let newRight = startRightRig - (dx / window.innerWidth) * 100;
+                        newRight = Math.min(70, Math.max(5, newRight));
+                        bikeRig.style.right = newRight + '%';
+                    }
+                    checkGlow();
+                }
+                function dragEnd(e) {
+                    e.preventDefault();
+                    document.removeEventListener('touchmove', dragMove);
+                    document.removeEventListener('touchend', dragEnd);
+                    startXHer = undefined;
+                    startXRig = undefined;
+                }
+
+                dragListeners.her = dragHerStart;
+                dragListeners.him = dragRigStart;
+                dragListeners.move = dragMove;
+                dragListeners.end = dragEnd;
+
+                herWrap.addEventListener('touchstart', dragHerStart);
+                bikeRig.addEventListener('touchstart', dragRigStart);
+            }
+
+            function checkGlow() {
+                let herRect = herWrap.getBoundingClientRect();
+                let bikeRect = bikeRig.getBoundingClientRect();
+                let dist = Math.abs(herRect.right - bikeRect.left);
+                if (dist < 120) { // slightly larger threshold for easier trigger
+                    glowBetween.style.opacity = '0.8';
+                    if (!glowTriggered) {
+                        glowTriggered = true;
+                        setTimeout(() => setPhase(4), 1200);
+                    }
+                } else {
+                    glowBetween.style.opacity = '0';
+                }
+            }
+
+            // ----- hug phase (phase 4) -----
+            function setupHug() {
+                herTouched = false; himTouched = false;
+                document.addEventListener('touchstart', hugTouchStart);
+                document.addEventListener('touchend', hugTouchEnd);
+                document.addEventListener('touchcancel', hugTouchEnd);
+                hugListenersAttached = true;
+            }
+
+            function hugTouchStart(e) {
+                e.preventDefault(); // prevent scrolling
+                if (e.target.closest('.her-wrap')) { herTouched = true; }
+                if (e.target.closest('.bike-rig')) { himTouched = true; }
+                if (herTouched && himTouched) {
+                    // both touched, start timer
+                    clearTimeout(hugTimeout);
+                    hugTimeout = setTimeout(() => {
+                        createHearts(20);
+                        body.style.background = 'linear-gradient(to bottom, #ffd1d1, #ffe6e6)';
+                        setTimeout(() => setPhase(5), 1500);
+                    }, 2000);
+                }
+            }
+
+            function hugTouchEnd(e) {
+                if (e.target.closest('.her-wrap')) herTouched = false;
+                if (e.target.closest('.bike-rig')) himTouched = false;
+                if (!herTouched || !himTouched) {
+                    clearTimeout(hugTimeout);
+                }
+            }
+
+            // ----- swipe phase (phase 5) -----
+            let touchStartX = 0;
+            function swipeStart(e) {
+                e.preventDefault();
+                touchStartX = e.touches[0].clientX;
+            }
+            function swipeEnd(e) {
+                e.preventDefault();
+                let dx = e.changedTouches[0].clientX - touchStartX;
+                if (dx > 50) {
+                    createHearts(18);
+                    setTimeout(() => setPhase(6), 1800);
+                }
+            }
+            function setupSwipe() {
+                document.addEventListener('touchstart', swipeStart, { passive: false });
+                document.addEventListener('touchend', swipeEnd, { passive: false });
+            }
+
+            // ----- change outfit game (phase2) -----
+            function startChangeGame() {
+                changeUI.style.display = 'flex';
+                story.innerText = 'choose a new dress...';
+                instr.innerText = 'hold the button';
+                holdProgress = 0;
+                btnFill.style.height = '0%';
+                function fill() {
+                    holdInterval = setInterval(() => {
+                        holdProgress += 3;
+                        btnFill.style.height = holdProgress + '%';
+                        if (holdProgress >= 100) {
+                            clearInterval(holdInterval);
+                            finishChange();
+                        }
+                    }, 40);
+                }
+                function release() {
+                    clearInterval(holdInterval);
+                    if (holdProgress < 100) { holdProgress = 0; btnFill.style.height = '0%'; }
+                }
+                holdBtn.addEventListener('touchstart', fill, {passive: false});
+                holdBtn.addEventListener('touchend', release);
+                holdBtn.addEventListener('mousedown', fill);
+                holdBtn.addEventListener('mouseup', release);
+                holdBtn.addEventListener('mouseleave', release);
+            }
+            function finishChange() {
+                changeUI.style.display = 'none';
+                currentGirlAvatar = 'assets/yo1.png';
+                herImg.src = currentGirlAvatar;
+                herSeated.src = currentGirlAvatar;
+                herImg.style.opacity = '1';
+                door.classList.add('open');
+                setTimeout(() => {
+                    herWrap.style.left = '20%';
+                    setTimeout(() => setPhase(3), 800);
+                }, 500);
+            }
+
+            // ----- items for phase6 -----
+            function spawnItems() {
+                const emojis = ['✏️', '📏', '🍦', '🥔', '🍫'];
+                for (let i=0; i<5; i++) {
+                    let it = document.createElement('div');
+                    it.className = 'item';
+                    it.innerText = emojis[i];
+                    it.style.left = (10 + i*16) + '%';
+                    it.style.top = '40%';
+                    it.style.opacity = '0';
+                    itemsLayer.appendChild(it);
+                    setTimeout(() => it.style.opacity = '1', i*200);
+                    it.onclick = () => {
+                        if (it.style.opacity !== '0') {
+                            it.style.opacity = '0';
+                            collected++;
+                            if (collected >= 3) {
+                                setTimeout(() => setPhase(7), 1000);
+                            }
+                        }
+                    };
+                }
+            }
+
+            // ----- hearts -----
+            function createHearts(count) {
+                for (let i=0; i<count; i++) {
+                    let h = document.createElement('div');
+                    h.className = 'heart';
+                    h.innerText = '❤️';
+                    h.style.left = (30 + Math.random()*40) + '%';
+                    h.style.top = (40 + Math.random()*30) + '%';
+                    body.appendChild(h);
+                    setTimeout(() => h.remove(), 1500);
+                }
+            }
+
+            // start
+            setPhase(1);
+        })();
+    </script>
+</body>
+</html>
