@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory 05: The Commitment</title>
+    <style>
+        /* =====================================================
+           1. VALENTINE THEME CORE
+           ===================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:ital,wght@1,600&family=Dancing+Script:wght@700&display=swap');
+
+        :root {
+            /* Romantic Valentine Gradient */
+            --bg-valentine: linear-gradient(180deg, #4a148c 0%, #880e4f 40%, #ff5252 80%, #ff8a80 100%);
+            --water-color: linear-gradient(180deg, #311b92 0%, #1a237e 100%);
+            --accent: #ff4081;
+            --gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            height: 100vh; width: 100vw; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-valentine);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+            color: white; opacity: 0; transition: opacity 1.5s ease;
+        }
+        body.loaded { opacity: 1; }
+
+        /* Ambient Hearts Background */
+        .ambient-hearts {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bg-heart {
+            position: absolute; color: rgba(255, 255, 255, 0.1);
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-10vh) rotate(360deg); } }
+
+        /* =====================================================
+           2. SCENERY (Train, Bridge, River)
+           ===================================================== */
+        .scenery-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+
+        /* TRAIN TRACK */
+        .track-container {
+            position: absolute; bottom: 25vh; width: 120%; left: -10%;
+            height: 20px; border-bottom: 4px solid #3e2723;
+            background: repeating-linear-gradient(90deg, transparent 0, transparent 20px, #3e2723 20px, #3e2723 25px);
+            opacity: 0; transition: opacity 1s; z-index: 2;
+        }
+        
+        /* THE TRAIN GROUP */
+        .train-group {
+            position: absolute; bottom: 26vh; left: -100vw; /* Start way off */
+            display: flex; align-items: center; transition: left 0.1s linear;
+            z-index: 3;
+        }
+        .train-emoji { font-size: 5rem; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); z-index: 2; }
+        
+        /* HIM ON TRAIN */
+        .him-arrival {
+            position: absolute; left: 60px; bottom: 10px;
+            width: 80px; height: auto; z-index: 1;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+
+        /* BRIDGE */
+        .bridge-structure {
+            position: absolute; bottom: 20vh; width: 100%; height: 120px;
+            opacity: 0; transition: opacity 2s; z-index: 2;
+        }
+        .bridge-arch {
+            position: absolute; bottom: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle at 50% 120%, transparent 60%, rgba(0,0,0,0.5) 61%);
+            border-bottom: 5px solid #263238;
+        }
+        
+        /* RIVER */
+        .river {
+            position: absolute; bottom: 0; width: 100%; height: 20vh;
+            background: var(--water-color); z-index: 1;
+            opacity: 0; transition: opacity 2s;
+        }
+        .ripple {
+            position: absolute; width: 100%; height: 100%;
+            background: repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255,255,255,0.05) 55px, transparent 60px);
+            animation: flow 8s linear infinite;
+        }
+        @keyframes flow { from { background-position: 0 0; } to { background-position: 200px 0; } }
+
+        /* =====================================================
+           3. ACTORS
+           ===================================================== */
+        .stage {
+            position: absolute; bottom: 18vh; /* Lowered to be on the bank */
+            width: 100%; height: 300px;
+            z-index: 10; pointer-events: none;
+        }
+
+        .avatar {
+            position: absolute; bottom: 0; 
+            transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+
+        /* Initial positions - closer together */
+        #her { left: 30%; height: 95px; width: auto; z-index: 12; opacity: 0; }
+        #him { right: 30%; height: 105px; width: auto; z-index: 11; opacity: 0; }
+
+        /* States */
+        .closer #her { left: 40%; }
+        .closer #him { right: 40%; }
+        
+        /* Intimate (Overlap) */
+        .intimate #her { left: 45%; transform: rotate(8deg); }
+        .intimate #him { right: 42%; transform: rotate(-8deg); }
+
+        /* =====================================================
+           4. UI & TEXT
+           ===================================================== */
+        .ui-layer {
+            position: absolute; top: 12%; width: 90%; max-width: 400px;
+            text-align: center; z-index: 100; pointer-events: none;
+        }
+
+        .story-text {
+            display: inline-block; background: rgba(255, 255, 255, 0.95); color: #880e4f;
+            padding: 15px 30px; border-radius: 30px;
+            font-family: 'Dancing Script', cursive; font-size: 1.4rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 2px solid #f8bbd0;
+            opacity: 0; transform: translateY(20px); transition: all 0.8s ease;
+        }
+        .story-text.visible { opacity: 1; transform: translateY(0); }
+
+        .instruction {
+            margin-top: 15px; font-family: 'Poppins', sans-serif; font-size: 0.9rem;
+            font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background: rgba(255, 64, 129, 0.6); padding: 8px 16px; border-radius: 20px;
+            opacity: 0; transition: opacity 0.5s; display: inline-block;
+        }
+        .instruction.visible { opacity: 1; }
+
+        /* =====================================================
+           5. INTERACTIVE ELEMENTS
+           ===================================================== */
+        
+        /* Train Control Button */
+        .drive-btn {
+            position: absolute; bottom: 10vh; pointer-events: auto;
+            width: 80px; height: 80px; background: white; border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            font-size: 2rem; box-shadow: 0 0 20px rgba(255,255,255,0.5);
+            border: 4px solid var(--accent); cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .drive-btn:active { transform: scale(0.9); }
+
+        /* Dairy Milk */
+        .chocolate {
+            position: absolute; font-size: 3.5rem; bottom: 28vh; right: 30%;
+            filter: drop-shadow(0 0 10px gold); cursor: pointer;
+            animation: float 2s infinite ease-in-out; pointer-events: auto;
+            opacity: 0; z-index: 20; transition: all 1s;
+        }
+
+        /* Hold Ring (Kiss Phase) */
+        .hold-ring {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            width: 120px; height: 120px; border: 4px solid rgba(255,255,255,0.5);
+            border-radius: 50%; display: none; pointer-events: auto; cursor: pointer;
+        }
+        .hold-fill {
+            width: 100%; height: 100%; background: radial-gradient(circle, var(--accent), transparent);
+            border-radius: 50%; transform: scale(0); transition: transform 0.1s linear;
+        }
+
+        /* Word Drag */
+        .word-container {
+            position: absolute; top: 45%; width: 100%; height: 100px;
+            display: none; justify-content: center; gap: 50px; pointer-events: none;
+        }
+        .word-target {
+            border: 2px dashed rgba(255,255,255,0.7); border-radius: 15px;
+            width: 120px; height: 40px; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold;
+        }
+        #drag-word {
+            position: absolute; pointer-events: auto; cursor: grab; z-index: 100;
+            background: var(--gold); color: #333; padding: 8px 20px; border-radius: 20px;
+            font-weight: bold; transform: translate(0,0);
+        }
+
+        /* =====================================================
+           6. TREASURE & ENDING
+           ===================================================== */
+        
+        .hidden-heart {
+            position: absolute; bottom: 8vh; left: 50%; transform: translateX(-50%);
+            font-size: 2rem; opacity: 0; cursor: pointer;
+            filter: drop-shadow(0 0 15px var(--accent));
+            animation: pulse 1.5s infinite; pointer-events: none; z-index: 200;
+        }
+
+        /* Treasure Modal */
+        .treasure-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 11, 46, 0.95); z-index: 300;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 1s;
+        }
+        .treasure-box { font-size: 6rem; cursor: pointer; transition: transform 0.5s; }
+        
+        .note-paper {
+            background: #fff0f6; color: #880e4f;
+            width: 85%; max-width: 350px; padding: 40px 30px;
+            font-family: 'Dancing Script', cursive; font-size: 1.5rem;
+            box-shadow: 0 0 40px rgba(255, 64, 129, 0.4);
+            transform: scale(0); transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; line-height: 1.6; border-radius: 10px; border: 2px solid #f8bbd0;
+        }
+        .note-line { opacity: 0; transition: opacity 1s; display: block; margin-bottom: 15px; }
+
+        .home-btn {
+            margin-top: 30px; padding: 15px 40px;
+            background: var(--accent); color: white; border: none; border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer;
+            opacity: 0; transition: opacity 1s; box-shadow: 0 10px 20px rgba(255, 64, 129, 0.4);
+        }
+
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+        @keyframes pulse { 0%{transform: translateX(-50%) scale(1);} 50%{transform: translateX(-50%) scale(1.2);} 100%{transform: translateX(-50%) scale(1);} }
+        .particle { position: absolute; font-size: 1.5rem; animation: rise 2s forwards; pointer-events: none; z-index: 99; }
+        @keyframes rise { to { transform: translateY(-150px) scale(1.5); opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="vignette"></div>
+    <div class="ambient-hearts" id="ambient-bg"></div>
+
+    <div class="scenery-layer">
+        <div class="track-container" id="track"></div>
+        <div class="train-group" id="train-group">
+            <div class="train-emoji">🚆</div>
+            <img src="assets/h1.png" class="him-arrival" alt="Him Arriving">
+        </div>
+
+        <div class="bridge-structure" id="bridge">
+            <div class="bridge-arch"></div>
+        </div>
+        <div class="river" id="river">
+            <div class="ripple"></div>
+            <div class="hidden-heart" id="treasure-trigger" onclick="openTreasure()">💖</div>
+        </div>
+    </div>
+
+    <div class="stage" id="stage">
+        <img src="assets/yo1.png" id="her" class="avatar" alt="Her">
+        <img src="assets/h1.png" id="him" class="avatar" alt="Him">
+    </div>
+
+    <div class="ui-layer">
+        <div class="story-text" id="story"></div>
+        <div class="instruction" id="instr"></div>
+    </div>
+
+    <div class="drive-btn" id="drive-btn">🚂</div>
+
+    <div class="chocolate" id="choco">🍫</div>
+    
+    <div class="hold-ring" id="hold-btn">
+        <div class="hold-fill" id="hold-fill"></div>
+    </div>
+
+    <div class="word-container" id="word-game">
+        <div class="word-target" id="drop-zone">We are...</div>
+    </div>
+    <div id="drag-word" style="display:none; top: 60%; left: 50%; transform: translate(-50%, 0);">Forever</div>
+
+    <div class="treasure-modal" id="modal">
+        <div class="treasure-box" id="box" onclick="revealNote()">🎁</div>
+        <div class="note-paper" id="note">
+            <span class="note-line">You are my treasure.</span>
+            <span class="note-line">I love being with you.</span>
+            <span class="note-line">Thank you for choosing me.</span>
+            <span class="note-line">Thank you for staying with me.</span>
+            <span class="note-line" style="font-weight:bold; color:#d81b60; margin-top:15px; font-size:1.8rem;">Happy Valentine’s Day ❤️</span>
+        </div>
+        <button class="home-btn" id="home-btn" onclick="goHome()">Back to Our Story ❤️</button>
+    </div>
+
+    <script>
+        // --- ASSETS ---
+        const her = document.getElementById('her');
+        const him = document.getElementById('him');
+        const story = document.getElementById('story');
+        const instr = document.getElementById('instr');
+        const bg = document.getElementById('ambient-bg');
+        
+        // Scene
+        const track = document.getElementById('track');
+        const trainGroup = document.getElementById('train-group');
+        const bridge = document.getElementById('bridge');
+        const river = document.getElementById('river');
+        
+        // Interaction
+        const driveBtn = document.getElementById('drive-btn');
+        const choco = document.getElementById('choco');
+        const holdBtn = document.getElementById('hold-btn');
+        const holdFill = document.getElementById('hold-fill');
+        const wordGame = document.getElementById('word-game');
+        const dragWord = document.getElementById('drag-word');
+        const dropZone = document.getElementById('drop-zone');
+        const treasureTrigger = document.getElementById('treasure-trigger');
+
+        // State
+        let phase = 0;
+        let trainPos = -100; // vw
+        let driveInterval = null;
+        let isHolding = false;
+
+        window.onload = () => {
+            document.body.classList.add('loaded');
+            createAmbientHearts();
+            setTimeout(() => setPhase(1), 1000);
+        };
+
+        function setPhase(p) {
+            phase = p;
+            story.classList.remove('visible');
+            instr.classList.remove('visible');
+            setTimeout(() => runLogic(p), 800);
+        }
+
+        function runLogic(p) {
+            story.classList.add('visible');
+            
+            if (p === 1) { // === TRAIN ARRIVAL ===
+                story.innerText = "He came to see me... Not on a bike.";
+                track.style.opacity = 1;
+                // Girl is hidden in first scene
+                
+                setTimeout(() => {
+                    story.innerText = "He came by train.";
+                    instr.innerText = "Hold Button to Drive Train";
+                    instr.classList.add('visible');
+                    
+                    driveBtn.style.display = "flex";
+                    
+                    // Drive Logic
+                    const moveTrain = () => {
+                        driveInterval = setInterval(() => {
+                            trainPos += 1;
+                            trainGroup.style.left = trainPos + "vw";
+                            if(trainPos >= 10) { // Arrival point
+                                clearInterval(driveInterval);
+                                driveBtn.style.display = "none";
+                                story.innerText = "He arrived.";
+                                setTimeout(() => setPhase(2), 2000);
+                            }
+                        }, 20);
+                    };
+                    const stopTrain = () => clearInterval(driveInterval);
+                    
+                    driveBtn.addEventListener('mousedown', moveTrain);
+                    driveBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); moveTrain()});
+                    window.addEventListener('mouseup', stopTrain);
+                    window.addEventListener('touchend', stopTrain);
+                }, 2000);
+            }
+            
+            else if (p === 2) { // === MELE KADAVU & CHOCOLATE ===
+                // Transition scene
+                track.style.opacity = 0;
+                trainGroup.style.opacity = 0;
+                
+                bridge.style.opacity = 1;
+                river.style.opacity = 1;
+                
+                // Position Avatars for Scene 2 (Closer and on bank)
+                her.style.transition = "none"; him.style.transition = "none";
+                her.style.left = "30%"; him.style.right = "30%";
+                him.style.opacity = 1;
+                her.style.opacity = 1; // Girl appears
+                
+                setTimeout(() => {
+                    her.style.transition = "all 1s ease"; him.style.transition = "all 1s ease";
+                    story.innerText = "We went to Mele Kadavu. The evening was magical.";
+                    
+                    setTimeout(() => {
+                        story.innerText = "He bought me my favorite.";
+                        instr.innerText = "Tap the chocolate";
+                        instr.classList.add('visible');
+                        
+                        choco.style.opacity = 1;
+                        choco.onclick = () => {
+                            choco.onclick = null;
+                            instr.classList.remove('visible');
+                            // Move Choco to Her
+                            choco.style.top = "65%";
+                            choco.style.left = "35%";
+                            choco.style.transform = "scale(0.5)";
+                            choco.style.opacity = 0;
+                            
+                            createParticles(window.innerWidth * 0.35, window.innerHeight * 0.65, "💖");
+                            
+                            // Move them closer
+                            document.getElementById('stage').classList.add('closer');
+                            
+                            setTimeout(() => setPhase(3), 2000);
+                        };
+                    }, 2500);
+                }, 100);
+            }
+            
+            else if (p === 3) { // === THE KISS ===
+                story.innerText = "We smiled... We talked...";
+                
+                setTimeout(() => {
+                    story.innerText = "And then, we kissed.";
+                    instr.innerText = "Hold the circle to embrace";
+                    instr.classList.add('visible');
+                    
+                    holdBtn.style.display = "block";
+                    
+                    // Hold Logic
+                    const start = (e) => { e.preventDefault(); isHolding = true; fillRing(); };
+                    const stop = () => { isHolding = false; holdFill.style.transform = "scale(0)"; };
+                    
+                    holdBtn.addEventListener('mousedown', start);
+                    holdBtn.addEventListener('touchstart', start);
+                    window.addEventListener('mouseup', stop);
+                    window.addEventListener('touchend', stop);
+                }, 2000);
+            }
+            
+            else if (p === 4) { // === COMMITMENT ===
+                holdBtn.style.display = "none";
+                document.getElementById('stage').classList.add('intimate'); // Overlap
+                createParticles(window.innerWidth/2, window.innerHeight/2, "❤️");
+
+                story.innerText = "From now onwards... We are for each other.";
+                
+                setTimeout(() => {
+                    story.innerText = "Forever.";
+                    instr.innerText = "Drag 'Forever' to the text";
+                    instr.classList.add('visible');
+                    
+                    wordGame.style.display = "flex";
+                    dragWord.style.display = "block";
+                    enableDrag();
+                }, 2500);
+            }
+            
+            else if (p === 5) { // === TREASURE HUNT ===
+                wordGame.style.opacity = 0;
+                dragWord.style.display = "none";
+                
+                story.innerText = "Something precious was hidden in that moment...";
+                instr.innerText = "";
+                
+                setTimeout(() => {
+                    treasureTrigger.style.pointerEvents = "auto";
+                    treasureTrigger.style.opacity = 1;
+                }, 2000);
+            }
+        }
+
+        // --- PHASE 3: HOLD LOGIC ---
+        function fillRing() {
+            let scale = 0;
+            const animate = () => {
+                if(!isHolding) return;
+                scale += 0.02;
+                holdFill.style.transform = `scale(${scale})`;
+                if(scale >= 1) {
+                    isHolding = false;
+                    createParticles(window.innerWidth/2, window.innerHeight/2, "💋");
+                    setPhase(4);
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            };
+            requestAnimationFrame(animate);
+        }
+
+        // --- PHASE 4: DRAG LOGIC ---
+        function enableDrag() {
+            const onMove = (e) => {
+                e.preventDefault();
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                dragWord.style.position = 'fixed';
+                dragWord.style.left = x + 'px';
+                dragWord.style.top = y + 'px';
+                dragWord.style.transform = 'translate(-50%, -50%)';
+            };
+
+            const onEnd = () => {
+                const r1 = dragWord.getBoundingClientRect();
+                const r2 = dropZone.getBoundingClientRect();
+                
+                if (!(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom)) {
+                    // Success
+                    dropZone.innerText = "Forever ❤️";
+                    dropZone.style.border = "2px solid gold";
+                    dropZone.style.background = "rgba(255,215,0,0.2)";
+                    dragWord.style.display = 'none';
+                    createParticles(window.innerWidth/2, window.innerHeight/2, "✨");
+                    setTimeout(() => setPhase(5), 1500);
+                } else {
+                    // Reset
+                    dragWord.style.left = '50%';
+                    dragWord.style.top = '60%';
+                }
+                
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('touchmove', onMove);
+            };
+
+            const onStart = () => {
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('touchmove', onMove, {passive:false});
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchend', onEnd);
+            };
+
+            dragWord.addEventListener('mousedown', onStart);
+            dragWord.addEventListener('touchstart', onStart);
+        }
+
+        // --- PHASE 5: TREASURE ---
+        function openTreasure() {
+            document.getElementById('modal').style.opacity = 1;
+            document.getElementById('modal').style.pointerEvents = "auto";
+        }
+
+        function revealNote() {
+            const box = document.getElementById('box');
+            const note = document.getElementById('note');
+            const btn = document.getElementById('home-btn');
+            
+            box.style.transform = "scale(0)"; 
+            setTimeout(() => {
+                box.style.display = "none";
+                note.style.transform = "scale(1)";
+                
+                const lines = document.querySelectorAll('.note-line');
+                lines.forEach((line, index) => {
+                    setTimeout(() => line.style.opacity = 1, index * 800);
+                });
+
+                setTimeout(() => btn.style.opacity = 1, lines.length * 800 + 500);
+            }, 500);
+        }
+
+        // --- VISUALS ---
+        function createParticles(x, y, char) {
+            for(let i=0; i<12; i++) {
+                let p = document.createElement('div');
+                p.innerText = char;
+                p.className = 'particle';
+                p.style.left = (x + Math.random()*60 - 30) + 'px';
+                p.style.top = (y + Math.random()*60 - 30) + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 2000);
+            }
+        }
+
+        function createAmbientHearts() {
+            const container = document.getElementById('ambient-bg');
+            for(let i=0; i<15; i++) {
+                let h = document.createElement('div');
+                h.innerText = "❤️";
+                h.className = "bg-heart";
+                h.style.left = Math.random()*100 + "vw";
+                h.style.fontSize = (Math.random()*20 + 10) + "px";
+                h.style.animationDuration = (Math.random()*10 + 10) + "s";
+                h.style.animationDelay = Math.random()*5 + "s";
+                container.appendChild(h);
+            }
+        }
+
+        function goHome() {
+            window.location.href = "valentine.html";
+        }
+
+    </script>
+</body>
+</html>
