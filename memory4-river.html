@@ -424,19 +424,22 @@
             let collected = 0;
             let holdProgress = 0;
             let holdInterval = null;
-            let currentGirlAvatar = 'assets/you.png'; // default, will change after dress-up
+            let currentGirlAvatar = 'assets/you.png';
 
-            // for drag in phase 3
-            let dragActive = false;
-            let dragListeners = { her: null, him: null, move: null, end: null };
+            // drag phase 3
+            let dragListeners = { herTouch: null, himTouch: null, herMouse: null, himMouse: null, move: null, end: null };
             let glowTriggered = false;
 
-            // for hug phase
-            let hugListenersAttached = false;
+            // hug phase 4 (universal hold)
             let hugTimeout = null;
-            let herTouched = false, himTouched = false;
+            let hugListenersAttached = false;
 
-            // ----- helper: poetic feedback -----
+            // swipe phase 5 (universal drag)
+            let swipeStartX = 0;
+            let swiping = false;
+            let swipeListenersAttached = false;
+
+            // ----- helpers -----
             function showPoetic(msg) {
                 const tip = document.createElement('div');
                 tip.className = 'poetic-tip';
@@ -447,9 +450,46 @@
                 setTimeout(() => tip.remove(), 1500);
             }
 
-            // ----- phase control with cleanup -----
+            function removeDragListeners() {
+                if (dragListeners.herTouch) herWrap.removeEventListener('touchstart', dragListeners.herTouch);
+                if (dragListeners.himTouch) bikeRig.removeEventListener('touchstart', dragListeners.himTouch);
+                if (dragListeners.herMouse) herWrap.removeEventListener('mousedown', dragListeners.herMouse);
+                if (dragListeners.himMouse) bikeRig.removeEventListener('mousedown', dragListeners.himMouse);
+                if (dragListeners.move) {
+                    document.removeEventListener('touchmove', dragListeners.move);
+                    document.removeEventListener('mousemove', dragListeners.move);
+                }
+                if (dragListeners.end) {
+                    document.removeEventListener('touchend', dragListeners.end);
+                    document.removeEventListener('mouseup', dragListeners.end);
+                }
+                dragListeners = { herTouch: null, himTouch: null, herMouse: null, himMouse: null, move: null, end: null };
+                glowTriggered = false;
+            }
+
+            function removeHugListeners() {
+                document.removeEventListener('mousedown', hugStart);
+                document.removeEventListener('mouseup', hugEnd);
+                document.removeEventListener('touchstart', hugStart);
+                document.removeEventListener('touchend', hugEnd);
+                document.removeEventListener('touchcancel', hugEnd);
+                clearTimeout(hugTimeout);
+                hugListenersAttached = false;
+            }
+
+            function removeSwipeListeners() {
+                document.removeEventListener('mousedown', swipeMouseDown);
+                document.removeEventListener('mousemove', swipeMouseMove);
+                document.removeEventListener('mouseup', swipeMouseUp);
+                document.removeEventListener('touchstart', swipeTouchStart);
+                document.removeEventListener('touchmove', swipeTouchMove);
+                document.removeEventListener('touchend', swipeTouchEnd);
+                swipeListenersAttached = false;
+                swiping = false;
+            }
+
+            // ----- phase control -----
             function setPhase(p) {
-                // cleanup previous phase's special listeners
                 if (phase === 3) removeDragListeners();
                 if (phase === 4) removeHugListeners();
                 if (phase === 5) removeSwipeListeners();
@@ -457,50 +497,22 @@
                 phase = p;
                 story.classList.remove('active');
                 instr.classList.remove('active');
-                setTimeout(() => {
-                    runPhase(p);
-                }, 300);
+                setTimeout(() => runPhase(p), 300);
             }
 
-            function removeDragListeners() {
-                if (dragListeners.her) herWrap.removeEventListener('touchstart', dragListeners.her);
-                if (dragListeners.him) bikeRig.removeEventListener('touchstart', dragListeners.him);
-                if (dragListeners.move) document.removeEventListener('touchmove', dragListeners.move);
-                if (dragListeners.end) document.removeEventListener('touchend', dragListeners.end);
-                dragListeners = { her: null, him: null, move: null, end: null };
-                dragActive = false;
-                glowTriggered = false; // reset for next time
-            }
-
-            function removeHugListeners() {
-                // hug listeners are on document, we'll just remove them
-                document.removeEventListener('touchstart', hugTouchStart);
-                document.removeEventListener('touchend', hugTouchEnd);
-                document.removeEventListener('touchcancel', hugTouchEnd);
-                hugListenersAttached = false;
-                clearTimeout(hugTimeout);
-                herTouched = false; himTouched = false;
-            }
-
-            function removeSwipeListeners() {
-                document.removeEventListener('touchstart', swipeStart);
-                document.removeEventListener('touchend', swipeEnd);
-            }
-
-            // ----- phase logic -----
             function runPhase(p) {
                 story.classList.add('active');
                 instr.classList.add('active');
 
-                if (p === 1) { // pickup
+                if (p === 1) {
                     body.style.background = 'linear-gradient(to bottom, #b0e0e6, #f5f5dc)';
                     ground.style.background = '#6b8e23';
                     scenery.innerHTML = '<div class="decor" style="left:5%;">🏫</div><div class="decor" style="right:5%;">🚸</div>';
                     home.style.display = 'none';
                     bikeRig.style.right = '-200px';
                     herWrap.style.left = '10%';
-                    herImg.src = currentGirlAvatar;  // use current (default initially)
-                    herSeated.src = currentGirlAvatar; // sync seated
+                    herImg.src = currentGirlAvatar;
+                    herSeated.src = currentGirlAvatar;
                     herSeated.style.display = 'none';
                     herWrap.style.display = 'flex';
                     bikeRig.style.display = 'block';
@@ -521,7 +533,7 @@
                         }, 800);
                     };
                 } 
-                else if (p === 2) { // home + change
+                else if (p === 2) {
                     body.style.background = '#faf0e6';
                     ground.style.background = '#a1887f';
                     scenery.innerHTML = '<div class="decor" style="left:5%;">🏡</div>';
@@ -550,7 +562,7 @@
                         }, 700);
                     };
                 }
-                else if (p === 3) { // riverside / sunset
+                else if (p === 3) {
                     body.style.background = 'linear-gradient(to bottom, #ff9a9e, #fad0c4)';
                     ground.style.background = '#5d6d3e';
                     waterGlow.style.opacity = '0.6';
@@ -558,7 +570,7 @@
                     scenery.innerHTML = '<div class="decor" style="left:5%;">🌅</div><div class="decor" style="right:5%;">🌾</div>';
                     bikeRig.style.display = 'block';
                     herWrap.style.display = 'flex';
-                    herImg.src = currentGirlAvatar;  // keep changed avatar
+                    herImg.src = currentGirlAvatar;
                     herSeated.src = currentGirlAvatar;
                     herImg.style.opacity = '1';
                     herSeated.style.display = 'none';
@@ -569,22 +581,20 @@
                     instr.innerText = 'Drag them closer';
                     enableDrag();
                 }
-                else if (p === 4) { // hug
+                else if (p === 4) {
                     waterGlow.style.opacity = '0.2';
                     story.innerText = 'He hugged me.';
-                    instr.innerText = 'Hold both (two fingers)';
-                    // make sure drag is off
+                    instr.innerText = 'Press & hold anywhere';
                     removeDragListeners();
-                    // setup hug listeners
                     setupHug();
                 }
-                else if (p === 5) { // kiss
+                else if (p === 5) {
                     removeHugListeners();
                     story.innerText = 'We kissed each other.';
-                    instr.innerText = 'Swipe right slowly';
+                    instr.innerText = 'Swipe / drag right';
                     setupSwipe();
                 }
-                else if (p === 6) { // Diaby & Goodbye (items)
+                else if (p === 6) {
                     body.style.background = '#2c3e50';
                     ground.style.background = '#3e2b1b';
                     waterGlow.style.opacity = '0';
@@ -595,7 +605,7 @@
                     instr.innerText = 'Tap 3 items for memories';
                     spawnItems();
                 }
-                else if (p === 7) { // final clue
+                else if (p === 7) {
                     story.innerText = 'That day ended... But something new had begun.';
                     instr.innerText = '';
                     bridgeFinal.style.opacity = '0.5';
@@ -612,38 +622,45 @@
                 }
             }
 
-            // ----- drag for phase 3 -----
+            // ----- drag phase 3 (touch + mouse) -----
             function enableDrag() {
-                let startXHer, startLeftHer, startXRig, startRightRig;
+                let startX, startLeftHer, startRightRig;
+                let draggingWhich = null;
+
+                function getClientX(e) {
+                    return e.touches ? e.touches[0].clientX : e.clientX;
+                }
 
                 function dragHerStart(e) {
                     e.preventDefault();
-                    let touch = e.touches[0];
-                    startXHer = touch.clientX;
+                    draggingWhich = 'her';
+                    startX = getClientX(e);
                     startLeftHer = parseFloat(herWrap.style.left) || 15;
                     document.addEventListener('touchmove', dragMove);
+                    document.addEventListener('mousemove', dragMove);
                     document.addEventListener('touchend', dragEnd);
+                    document.addEventListener('mouseup', dragEnd);
                 }
-                function dragRigStart(e) {
+                function dragHimStart(e) {
                     e.preventDefault();
-                    let touch = e.touches[0];
-                    startXRig = touch.clientX;
+                    draggingWhich = 'him';
+                    startX = getClientX(e);
                     startRightRig = parseFloat(bikeRig.style.right) || 15;
                     document.addEventListener('touchmove', dragMove);
+                    document.addEventListener('mousemove', dragMove);
                     document.addEventListener('touchend', dragEnd);
+                    document.addEventListener('mouseup', dragEnd);
                 }
                 function dragMove(e) {
                     e.preventDefault();
-                    // handle both possible moves (only one active at a time)
-                    if (startXHer !== undefined) {
-                        let touch = e.touches[0];
-                        let dx = touch.clientX - startXHer;
+                    if (!draggingWhich) return;
+                    let clientX = getClientX(e);
+                    let dx = clientX - startX;
+                    if (draggingWhich === 'her') {
                         let newLeft = startLeftHer + (dx / window.innerWidth) * 100;
                         newLeft = Math.min(70, Math.max(5, newLeft));
                         herWrap.style.left = newLeft + '%';
-                    } else if (startXRig !== undefined) {
-                        let touch = e.touches[0];
-                        let dx = touch.clientX - startXRig;
+                    } else {
                         let newRight = startRightRig - (dx / window.innerWidth) * 100;
                         newRight = Math.min(70, Math.max(5, newRight));
                         bikeRig.style.right = newRight + '%';
@@ -653,25 +670,30 @@
                 function dragEnd(e) {
                     e.preventDefault();
                     document.removeEventListener('touchmove', dragMove);
+                    document.removeEventListener('mousemove', dragMove);
                     document.removeEventListener('touchend', dragEnd);
-                    startXHer = undefined;
-                    startXRig = undefined;
+                    document.removeEventListener('mouseup', dragEnd);
+                    draggingWhich = null;
                 }
 
-                dragListeners.her = dragHerStart;
-                dragListeners.him = dragRigStart;
+                dragListeners.herTouch = dragHerStart;
+                dragListeners.himTouch = dragHimStart;
+                dragListeners.herMouse = dragHerStart;
+                dragListeners.himMouse = dragHimStart;
                 dragListeners.move = dragMove;
                 dragListeners.end = dragEnd;
 
-                herWrap.addEventListener('touchstart', dragHerStart);
-                bikeRig.addEventListener('touchstart', dragRigStart);
+                herWrap.addEventListener('touchstart', dragHerStart, { passive: false });
+                bikeRig.addEventListener('touchstart', dragHimStart, { passive: false });
+                herWrap.addEventListener('mousedown', dragHerStart);
+                bikeRig.addEventListener('mousedown', dragHimStart);
             }
 
             function checkGlow() {
                 let herRect = herWrap.getBoundingClientRect();
                 let bikeRect = bikeRig.getBoundingClientRect();
                 let dist = Math.abs(herRect.right - bikeRect.left);
-                if (dist < 120) { // slightly larger threshold for easier trigger
+                if (dist < 120) {
                     glowBetween.style.opacity = '0.8';
                     if (!glowTriggered) {
                         glowTriggered = true;
@@ -682,55 +704,74 @@
                 }
             }
 
-            // ----- hug phase (phase 4) -----
+            // ----- universal hold for hug (phase 4) -----
             function setupHug() {
-                herTouched = false; himTouched = false;
-                document.addEventListener('touchstart', hugTouchStart);
-                document.addEventListener('touchend', hugTouchEnd);
-                document.addEventListener('touchcancel', hugTouchEnd);
+                document.addEventListener('mousedown', hugStart);
+                document.addEventListener('mouseup', hugEnd);
+                document.addEventListener('touchstart', hugStart, { passive: false });
+                document.addEventListener('touchend', hugEnd);
+                document.addEventListener('touchcancel', hugEnd);
                 hugListenersAttached = true;
             }
 
-            function hugTouchStart(e) {
-                e.preventDefault(); // prevent scrolling
-                if (e.target.closest('.her-wrap')) { herTouched = true; }
-                if (e.target.closest('.bike-rig')) { himTouched = true; }
-                if (herTouched && himTouched) {
-                    // both touched, start timer
-                    clearTimeout(hugTimeout);
-                    hugTimeout = setTimeout(() => {
-                        createHearts(20);
-                        body.style.background = 'linear-gradient(to bottom, #ffd1d1, #ffe6e6)';
-                        setTimeout(() => setPhase(5), 1500);
-                    }, 2000);
-                }
+            function hugStart(e) {
+                e.preventDefault();
+                hugTimeout = setTimeout(() => {
+                    createHearts(20);
+                    body.style.background = 'linear-gradient(to bottom, #ffd1d1, #ffe6e6)';
+                    setTimeout(() => setPhase(5), 1500);
+                }, 2000);
             }
 
-            function hugTouchEnd(e) {
-                if (e.target.closest('.her-wrap')) herTouched = false;
-                if (e.target.closest('.bike-rig')) himTouched = false;
-                if (!herTouched || !himTouched) {
-                    clearTimeout(hugTimeout);
-                }
+            function hugEnd(e) {
+                clearTimeout(hugTimeout);
             }
 
-            // ----- swipe phase (phase 5) -----
-            let touchStartX = 0;
-            function swipeStart(e) {
-                e.preventDefault();
-                touchStartX = e.touches[0].clientX;
+            // ----- universal swipe (phase 5) -----
+            function setupSwipe() {
+                document.addEventListener('mousedown', swipeMouseDown);
+                document.addEventListener('mousemove', swipeMouseMove);
+                document.addEventListener('mouseup', swipeMouseUp);
+                document.addEventListener('touchstart', swipeTouchStart, { passive: false });
+                document.addEventListener('touchmove', swipeTouchMove, { passive: false });
+                document.addEventListener('touchend', swipeTouchEnd);
+                swipeListenersAttached = true;
             }
-            function swipeEnd(e) {
-                e.preventDefault();
-                let dx = e.changedTouches[0].clientX - touchStartX;
+
+            function swipeMouseDown(e) {
+                swiping = true;
+                swipeStartX = e.clientX;
+            }
+            function swipeMouseMove(e) {
+                if (!swiping) return;
+                // optional: show feedback
+            }
+            function swipeMouseUp(e) {
+                if (!swiping) return;
+                let dx = e.clientX - swipeStartX;
                 if (dx > 50) {
                     createHearts(18);
                     setTimeout(() => setPhase(6), 1800);
                 }
+                swiping = false;
             }
-            function setupSwipe() {
-                document.addEventListener('touchstart', swipeStart, { passive: false });
-                document.addEventListener('touchend', swipeEnd, { passive: false });
+
+            function swipeTouchStart(e) {
+                e.preventDefault();
+                swiping = true;
+                swipeStartX = e.touches[0].clientX;
+            }
+            function swipeTouchMove(e) {
+                e.preventDefault();
+            }
+            function swipeTouchEnd(e) {
+                if (!swiping) return;
+                let dx = e.changedTouches[0].clientX - swipeStartX;
+                if (dx > 50) {
+                    createHearts(18);
+                    setTimeout(() => setPhase(6), 1800);
+                }
+                swiping = false;
             }
 
             // ----- change outfit game (phase2) -----
@@ -810,7 +851,6 @@
                 }
             }
 
-            // start
             setPhase(1);
         })();
     </script>
