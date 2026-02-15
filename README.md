@@ -125,7 +125,7 @@ This project explores the intersection of **web development and digital storytel
 
 <div align="center">
 
-**Created with ❤️ by [Minnu Lekha**](https://www.google.com/search?q=https://github.com/minnulekha)
+Created with ❤️ by [Minnu Lekha V G](https://www.google.com/search?q=https://github.com/minnulekha)
 
 </div>
 
