@@ -154,70 +154,90 @@
         <div class="rewards-grid" id="rewardGrid"></div>
     </div>
 
-    <script>
-        // Glowing Gold Cursor
-        const cursor = document.getElementById('heart-cursor');
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
+<script>
+    // Glowing Gold Cursor
+    const cursor = document.getElementById('heart-cursor');
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
 
-        // Falling Gold Hearts
-        function createFallingHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('heart-particle');
-            heart.innerHTML = '❤';
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.top = '-20px';
-            heart.style.fontSize = Math.random() * 15 + 10 + 'px';
-            heart.style.animationDuration = Math.random() * 3 + 5 + 's';
-            heart.style.color = '#D4AF37';
-            heart.style.position = 'fixed';
-            heart.style.zIndex = '500';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 7000);
+    // Falling Gold Hearts
+    function createFallingHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-particle');
+        heart.innerHTML = '❤';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.top = '-20px';
+        heart.style.fontSize = Math.random() * 15 + 10 + 'px';
+        heart.style.animationDuration = Math.random() * 3 + 5 + 's';
+        heart.style.color = '#D4AF37';
+        heart.style.position = 'fixed';
+        heart.style.zIndex = '500';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 7000);
+    }
+    setInterval(createFallingHeart, 1000);
+
+    // Calendar Data
+    const days = [
+        { d: 7, name: "Rose Day", icon: "🌹", link: "rose.html" },
+        { d: 8, name: "Propose Day", icon: "💍", link: "propose.html" },
+        { d: 9, name: "Chocolate Day", icon: "🍫", link: "chocolate.html" },
+        { d: 10, name: "Teddy Day", icon: "🧸", link: "teddy.html" },
+        { d: 11, name: "Promise Day", icon: "🤙", link: "promise.html" },
+        { d: 12, name: "Hug Day", icon: "🫂", link: "hug.html" },
+        { d: 13, name: "Kiss Day", icon: "💋", link: "kiss.html" },
+        { d: 14, name: "Valentine's", icon: "❤️", link: "valentine.html" }
+    ];
+
+    const grid = document.getElementById('rewardGrid');
+
+    // Correct Date Logic (checks month + day)
+    const now = new Date();
+    const today = now.getDate();
+    const month = now.getMonth(); // 0=Jan, 1=Feb, 2=Mar
+
+    days.forEach(day => {
+
+        let isLocked;
+
+        if (month < 1) {
+            // Before February → all locked
+            isLocked = true;
+
+        } else if (month === 1) {
+            // During February → unlock gradually
+            isLocked = today < day.d;
+
+        } else {
+            // After February → permanently unlocked
+            isLocked = false;
         }
-        setInterval(createFallingHeart, 1000);
 
-        // Calendar Logic
-        const days = [
-            { d: 7, name: "Rose Day", icon: "🌹", link: "rose.html" },
-            { d: 8, name: "Propose Day", icon: "💍", link: "propose.html" },
-            { d: 9, name: "Chocolate Day", icon: "🍫", link: "chocolate.html" },
-            { d: 10, name: "Teddy Day", icon: "🧸", link: "teddy.html" },
-            { d: 11, name: "Promise Day", icon: "🤙", link: "promise.html" },
-            { d: 12, name: "Hug Day", icon: "🫂", link: "hug.html" },
-            { d: 13, name: "Kiss Day", icon: "💋", link: "kiss.html" },
-            { d: 14, name: "Valentine's", icon: "❤️", link: "valentine.html" }
-        ];
+        const isToday = (month === 1 && today === day.d);
 
-        const grid = document.getElementById('rewardGrid');
-        const today = new Date().getDate();
-
-        days.forEach(day => {
-            const isLocked = today < day.d;
-            const isToday = today === day.d;
-            
-            grid.innerHTML += `
-                <div class="reward-card ${isLocked ? 'locked' : ''}">
-                    <a href="${isLocked ? '#' : day.link}" class="card-inner">
-                        <div class="card-front">
-                            ${isLocked ? `<div class="locked-shadow">${day.icon}</div>` : ''}
-                            <div class="card-date">FEBRUARY ${day.d}</div>
-                            <div class="card-icon">${isLocked ? '🔒' : day.icon}</div>
-                            <div class="card-title">${day.name}</div> <div style="margin-top: 20px; font-size: 0.7rem; letter-spacing: 3px; font-weight: 600;">
-                                ${isLocked ? 'LOCKED' : (isToday ? 'OPEN NOW' : 'REVEALED')}
-                            </div>
+        grid.innerHTML += `
+            <div class="reward-card ${isLocked ? 'locked' : ''}">
+                <a href="${isLocked ? '#' : day.link}" class="card-inner">
+                    <div class="card-front">
+                        ${isLocked ? `<div class="locked-shadow">${day.icon}</div>` : ''}
+                        <div class="card-date">FEBRUARY ${day.d}</div>
+                        <div class="card-icon">${isLocked ? '🔒' : day.icon}</div>
+                        <div class="card-title">${day.name}</div>
+                        <div style="margin-top: 20px; font-size: 0.7rem; letter-spacing: 3px; font-weight: 600;">
+                            ${isLocked ? 'LOCKED' : (isToday ? 'OPEN NOW' : 'REVEALED')}
                         </div>
-                        <div class="card-back">
-                            <p style="font-family: 'Playfair Display'; font-style: italic; font-size: 1rem;">
-                                Click to explore your special ${day.name} surprise...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-            `;
-        });
-    </script>
+                    </div>
+                    <div class="card-back">
+                        <p style="font-family: 'Playfair Display'; font-style: italic; font-size: 1rem;">
+                            Click to explore your special ${day.name} surprise...
+                        </p>
+                    </div>
+                </a>
+            </div>
+        `;
+    });
+</script>
 </body>
 </html>
