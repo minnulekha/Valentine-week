@@ -122,6 +122,24 @@
             z-index: 0;
         }
 
+        .day-label{
+    margin-top: 8px;
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: #D4AF37;
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: revealText 0.6s ease forwards;
+}
+
+@keyframes revealText{
+    to{
+        opacity:1;
+        transform: translateY(0);
+    }
+}
+
         /* Typography */
         .card-icon { font-size: 4rem; margin-bottom: 20px; z-index: 1; position: relative; }
         .card-date { font-size: 0.85rem; letter-spacing: 3px; margin-bottom: 10px; opacity: 0.8; z-index: 1; text-transform: uppercase;}
@@ -185,7 +203,7 @@
         { d: 8, name: "Propose Day", icon: "💍", link: "propose.html" },
         { d: 9, name: "Chocolate Day", icon: "🍫", link: "chocolate.html" },
         { d: 10, name: "Teddy Day", icon: "🧸", link: "teddy.html" },
-        { d: 11, name: "Promise Day", icon: "🤙", link: "promise.html" },
+        { d: 11, name: "Promise Day", icon: "🫶", link: "promise.html" },
         { d: 12, name: "Hug Day", icon: "🫂", link: "hug.html" },
         { d: 13, name: "Kiss Day", icon: "💋", link: "kiss.html" },
         { d: 14, name: "Valentine's", icon: "❤️", link: "valentine.html" }
@@ -225,9 +243,16 @@
                         <div class="card-date">FEBRUARY ${day.d}</div>
                         <div class="card-icon">${isLocked ? '🔒' : day.icon}</div>
                         <div class="card-title">${day.name}</div>
-                        <div style="margin-top: 20px; font-size: 0.7rem; letter-spacing: 3px; font-weight: 600;">
-                            ${isLocked ? 'LOCKED' : (isToday ? 'OPEN NOW' : 'REVEALED')}
-                        </div>
+
+                            ${!isLocked ? `
+                            <div class="day-label">
+                                ${day.name.toUpperCase()}
+                            </div>
+                            ` : ''}
+
+                            <div style="margin-top: 16px; font-size: 0.7rem; letter-spacing: 3px; font-weight: 600;">
+                                ${isLocked ? 'LOCKED' : (isToday ? 'OPEN NOW' : 'REVEALED')}
+                            </div>
                     </div>
                     <div class="card-back">
                         <p style="font-family: 'Playfair Display'; font-style: italic; font-size: 1rem;">

@@ -58,6 +58,20 @@ function initGame() {
     }, 600);
 }
 
+function revealAllCardsBeforeWin() {
+    const cards = document.querySelectorAll('.choc-card');
+    
+    cards.forEach(card => {
+        card.classList.add('flipped');
+        card.style.transform = 'scale(1.05)';
+        card.style.transition = 'transform 0.5s ease';
+    });
+
+    setTimeout(() => {
+        showWin();
+    }, 3500); // 2.5 seconds before popup
+}
+
 /* --- Core Gameplay --- */
 function flipCard() {
     if (!canFlip || flippedCards.length >= 2 || this.classList.contains('flipped')) return;
@@ -74,6 +88,7 @@ function checkMatch() {
 
     if (c1.dataset.val === c2.dataset.val) {
         matchedPairs++;
+        createChocolateBurst() 
         
         // Bite Sound & Animation
         if (crunch) {
@@ -89,8 +104,8 @@ function checkMatch() {
         canFlip = true;
         
         if (matchedPairs === 6) {
-            setTimeout(showWin, 1000);
-        }
+    setTimeout(revealAllCardsBeforeWin, 800);
+}
     } else {
         // Not a match: flip back
         setTimeout(() => {
@@ -102,6 +117,31 @@ function checkMatch() {
     }
 }
 
+/* --- Chocolate Burst Effect --- */
+function createChocolateBurst() {
+    for (let i = 0; i < 12; i++) {
+
+        const choco = document.createElement('div');
+        choco.className = 'choco-burst';
+        choco.innerHTML = '🍫';
+
+        // start from center of screen
+        choco.style.left = '50vw';
+        choco.style.top = '50vh';
+
+        // random direction
+        const x = (Math.random() - 0.5) * 400;
+        const y = (Math.random() - 0.5) * 300;
+
+        choco.style.setProperty('--x', x + 'px');
+        choco.style.setProperty('--y', y + 'px');
+        choco.style.animationDuration = (Math.random() * 0.6 + 0.8) + 's';
+
+        document.body.appendChild(choco);
+
+        setTimeout(() => choco.remove(), 1400);
+    }
+}
 /* --- Visual Effects (Hearts & Cursor) --- */
 setInterval(() => {
     const heart = document.createElement('div');
