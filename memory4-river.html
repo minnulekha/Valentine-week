@@ -340,7 +340,9 @@
     </style>
 </head>
 <body>
-
+<audio id="bg-music" autoplay loop>
+    <source src="munbe.mpeg" type="audio/mpeg">
+</audio>
     <!-- scenery -->
     <div class="scenery" id="scenery">
         <div class="decor" style="left:5%;">🏫</div>
@@ -418,7 +420,21 @@
             const itemsLayer = document.getElementById('itemsLayer');
             const bridgeFinal = document.getElementById('bridgeFinal');
             const wrongClues = document.querySelectorAll('.hidden-clue[data-type="wrong"]');
+            const music = document.getElementById("bg-music");
 
+// Restore saved time
+const savedTime = localStorage.getItem("musicTime");
+
+if (savedTime) {
+    music.currentTime = savedTime;
+}
+
+// Play after interaction (browser rule)
+document.body.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => {});
+    }
+});
             // state
             let phase = 0;
             let collected = 0;
@@ -620,9 +636,16 @@
                         });
                     });
                     bridgeFinal.addEventListener('click', function correct() {
-                        body.classList.add('fade-out');
-                        setTimeout(() => window.location.href = 'memory5-melekadavu.html', 800);
-                    });
+
+    // Save music time before leaving
+    localStorage.setItem("musicTime", music.currentTime);
+
+    body.classList.add('fade-out');
+
+    setTimeout(() => {
+        window.location.href = 'memory5-melekadavu.html';
+    }, 800);
+});
                 }
             }
 

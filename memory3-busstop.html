@@ -197,7 +197,9 @@
     </style>
 </head>
 <body>
-
+    <audio id="bg-music" autoplay loop>
+    <source src="munbe.mpeg" type="audio/mpeg">
+    </audio>
     <div class="vignette"></div>
 
     <div class="scenery">
@@ -254,7 +256,21 @@
         const her = document.getElementById('her');
         const him = document.getElementById('him');
         const thought = document.getElementById('thought');
-        
+        const music = document.getElementById("bg-music");
+
+// Restore saved time
+const savedTime = localStorage.getItem("musicTime");
+
+if (savedTime) {
+    music.currentTime = savedTime;
+}
+
+// Play after interaction
+document.body.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => {});
+    }
+});
         // Game 1
         const g1 = document.getElementById('g1');
         const holdBtn = document.getElementById('hold-btn');
@@ -412,9 +428,14 @@
             
             showThought("To the Karamana River... 🌊");
             
-            setTimeout(()=>{
-                window.location.href = "memory4-river.html";
-            }, 1500);
+        setTimeout(() => {
+
+            // Save current music time before leaving
+            localStorage.setItem("musicTime", music.currentTime);
+
+            window.location.href = "memory4-river.html";
+
+        }, 1500);
         }
 
         function toast(msg){

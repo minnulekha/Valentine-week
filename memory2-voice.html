@@ -183,7 +183,9 @@
     </style>
 </head>
 <body>
-
+<audio id="bg-music" autoplay loop>
+    <source src="munbe.mpeg" type="audio/mpeg">
+</audio>
     <div id="particles"></div>
 
     <div class="stage">
@@ -306,11 +308,32 @@
                 showToast("Connecting...");
                 
                 setTimeout(() => {
-                    document.body.style.opacity = 0;
-                    setTimeout(() => window.location.href = "memory3-busstop.html", 1000);
-                }, 1500);
+    // Save current music time before leaving
+    localStorage.setItem("musicTime", music.currentTime);
+
+    document.body.style.opacity = 0;
+    setTimeout(() => {
+        window.location.href = "memory3-busstop.html";
+    }, 1000);
+}, 1500);
             }
         }
+
+const music = document.getElementById("bg-music");
+
+// Restore saved time
+const savedTime = localStorage.getItem("musicTime");
+
+if (savedTime) {
+    music.currentTime = savedTime;
+}
+
+// Play after user interaction
+document.body.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => {});
+    }
+});
 
         // --- UTILS ---
         function showToast(msg) {

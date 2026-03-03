@@ -346,7 +346,9 @@
 </style>
 </head>
 <body>
-
+<audio id="bg-music" autoplay loop>
+    <source src="munbe.mpeg" type="audio/mpeg">
+</audio>
     <div id="heart-cursor"></div>
 
     <div id="intro-sequence">
@@ -450,6 +452,15 @@
                 showToast("Not here. Look for the heart ❤️");
             }
         });
+      
+      
+      const music = document.getElementById("bg-music");
+
+document.body.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => {});
+    }
+});
 
         // --- CHAT LOGIC ---
         function nextMessage() {
@@ -553,23 +564,27 @@
             }, 4000);
         }
 
-        function foundTreasure(el) {
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            
-            // Visual Success
-            el.style.zIndex = '999';
-            el.style.transition = 'all 1s ease';
-            el.style.transform = 'scale(10) rotate(360deg)';
-            
-            showToast("The heart that started everything... ❤️");
+function foundTreasure(el) {
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-            setTimeout(() => {
-                document.body.classList.add('fade-page');
-                setTimeout(() => {
-                    window.location.href = "memory2-voice.html";
-                }, 1500);
-            }, 1000);
-        }
+    const music = document.getElementById("bg-music");
+
+    // Save current time before leaving
+    localStorage.setItem("musicTime", music.currentTime);
+
+    el.style.zIndex = '999';
+    el.style.transition = 'all 1s ease';
+    el.style.transform = 'scale(10) rotate(360deg)';
+
+    showToast("The heart that started everything... ❤️");
+
+    setTimeout(() => {
+        document.body.classList.add('fade-page');
+        setTimeout(() => {
+            window.location.href = "memory2-voice.html";
+        }, 1500);
+    }, 1000);
+}
 
         // --- CURSOR ---
         document.addEventListener('mousemove', (e) => {

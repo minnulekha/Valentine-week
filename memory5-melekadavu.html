@@ -653,6 +653,9 @@
 </head>
 <body>
 <script src="story-lock.js"></script>
+<audio id="bg-music" autoplay loop>
+    <source src="munbe.mpeg" type="audio/mpeg">
+</audio>
     <div class="ambient-hearts" id="ambient-bg"></div>
 
     <div class="scenery-layer">
@@ -724,6 +727,22 @@
             const stage = document.getElementById('stage');
             const modal = document.getElementById('modal');
             const togetherBtn = document.getElementById('together-btn');
+
+const music = document.getElementById("bg-music");
+
+// Restore time
+const savedTime = localStorage.getItem("musicTime");
+if (savedTime) {
+    music.currentTime = savedTime;
+}
+
+// Play after interaction
+document.body.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => {});
+    }
+});
+
 
             // state
             let phase = 0;
